@@ -1,0 +1,509 @@
+# Factor Analysis
+
+## Background
+
+Factor analysis assumes "that the observed (measured) variables are **linear** cominations of some underlying source variables (or factors).  That is, it assumes the existence of a system of underlying factors and a system of observed variables ... Factor analysis refers to a variety of statistical techniques whose common objective is to represent a set of variables in terms of a smaller number of hypothetical varibles." - (Kim and Mueller 1990, 8-9)  Stated differently, "Factor Analysis is based on the fundamental assumption that some underlying factors, which are smaller in number than the number of observed variables, are responsible for the covariation among the observed variables." (Kim and Mueller 1990, 12).
+
+Factor analysis is seen as the middle ground between classical test theory and structural equation modeling.  There are two main types of factor analysis: exploratory and confirmatory.  Exploratory factor analysis (EFA) is done during the measurement development stage and tries to get an idea of the relationshp.  This is generally the more common approach for social science.  COnfirmatory factor analysis (CFA) is done after measure development. The way to think about EFA and CFA is to compare with exploratory data analysis versus hypothesis testing.  EFA is like EDA in that you are trying to understand the relationship, and have, at best, only a loose understanding of relationship.  CFA is like hypothesis testing in that you are no longer exploring the underlying structure, the number of dimensions, and which variables feed into that dimension.  Instead, you are testing these things explicitly.
+
+One major difference between the way we see factor analysis compared to correlation or regression is that we assume that the "covariation between the observed variables is completely determined by the common factor; if the commen factor is removed, there will be no correlated between $X_1$ and $X_2$... considering the correlation between two observed variables to be a result of their shareing of common sources or factors, and not as a result of one being a direct cause of the other." - Kim and Mueller 1990, 22.
+
+Goin to be primarily using the `psych` package instead of the base r `facanal()`.
+
+
+## Factor Analysis Assumptions
+
+1. Observed variables are linear combinations of some underlying causal variables. This assumption is supported by substantive knowledge of the data.
+2. Parsimony.  When two models work, we accept the simpler model.
+
+Other assumptions include the only random error and proper selection of variables
+
+NOTE: we can consider nonlinear or multiplicatove factor models, but they are not common.
+
+Additionally, when we have a one factor model we need at least 3 indicator variables.
+
+## Process of Measure Development
+
+Generally you want to follow this process:
+
+1. Develop items for your measure (theoretical)
+2. Collect pilot data from a representative sample (theoretical)
+3. Check out what that dataset looks like
+4. Consider whether you want to use EFA, CFA, or both (theoretical)
+5. If both, split your sample into random halves
+6. Compare the two samples and make sure they are similar
+
+
+
+## Initial Analysis
+
+We are going to use the Generic Conspiracist Belifs Scale which is designed to measrue conspiracist beliefs. "An EFA provides ifnormation on each item's relationship to a single factor hypotheiszed to be represented by each of the items.  EFA results give you basic information about how well items relate to that hypotehsized construct."
+
+Here we are loading the necessary packages and data:
+
+```{r}
+library(psych)
+library(tidyverse)
+library(readxl)
+library(sem) # for CFA
+
+gcbs <- read_excel('gcbs.xlsx') %>%
+  mutate_all(as.integer) %>%
+  as.data.frame()
+
+str(gcbs)
+```
+
+### Understanding the dataset
+
+Let's get to know our data first. One nice function is `describe` from the psych package which is similar to the `summary` function.  Also helpful are the error.dots() and error.bars() functions
+```{r}
+describe(gcbs)
+
+error.dots(gcbs)
+error.bars(gcbs)
+```
+
+If you are going to do both CFA and EFA, you need to split the dataset to avoid over fitting.
+
+```{r}
+# Establish two sets of indices to split the dataset
+N <- nrow(gcbs)
+indices <- seq(1, N)
+indices_EFA <- sample(indices, floor((.5*N)))
+indices_CFA <- indices[!(indices %in% indices_EFA)]
+
+# Use those indices to split the dataset into halves for your EFA and CFA
+gcbs_EFA <- gcbs[indices_EFA, ]
+gcbs_CFA <- gcbs[indices_CFA, ]
+```
+
+Now let's get an idea of the datasets that we have just split.  We do so by creating a grouping variable
+```{r}
+describe(gcbs_EFA)
+describe(gcbs_CFA)
+```
+
+The next common step is to find correlation between variables.  You would expect that variables that correlate well to be potentially related.
+```{r}
+lowerCor(gcbs_EFA)
+```
+
+Now we can actually test the correlations.  This will give us p-values for each variable and ci's.  These are important to report in a paper.
+
+```{r}
+correlation_test <- corr.test(gcbs_EFA, use = "pairwise.complete.obs")
+
+correlation_test$p
+correlation_test$ci # r is the correlation value
+```
+
+
+Cronbach's alpha is another important statistic to include in reports of measure development. This is also known as reliability. This statistic is a measrue of internal consistency. Most fields want raw_alpha of greater than 0.8.
+
+Anotehr nice output is a dataset that would show what would happen to the alpha if a variable is dropped.  If a value goes up, then we have reason to believe that we should drop the variable.
+
+```{r}
+psych::alpha(gcbs_EFA)
+```
+
+Additionally, we likely want to report the "Average split half reliability" in a report:
+
+```{r}
+splitHalf(gcbs_EFA)
+```
+
+
+## Single Factor EFA
+
+Here we are goin to run a single-factor EFA on the dataset and safe it as efa_model.
+
+```{r}
+efa_model <- fa(gcbs_EFA)
+
+efa_model
+```
+
+This returns a factor called MR1.  This name is due to it being the first factor extrated using "minimum residual estimation".
+
+EAch `fa()` returns a list and each element of the list contains information about the analysis. "Factor loadings represent the strength and directionality of hte relationship between each item and the underlying factor", ranging from -1 to 1.  
+
+"You can also create a diagram of loadings" using the fa.diagram function.  This shows a path diagram lthe items' loadings ordered from strongest to weakest.  Or you can stick to a regular matrix of the loadings
+
+```{r}
+# matrix
+efa_model$loadings
+
+# path diagram:
+fa.diagram(efa_model)
+```
+
+
+### Individuals' factor scores
+
+"The efa_model object also contains a named list element, `scores`, which contains factor scores for each person. These factor scores are an indication of how much or how little of the factor each person is thought to possess. Factor scores are not computed for examinees with missing data."
+
+
+```{r}
+# getting idea of the original data
+head(gcbs)
+rowSums(head(gcbs_EFA))
+
+# looking at first few lines of factor scores
+head(efa_model$scores)
+rowSums(head(efa_model$scores))
+
+# summary stats of scores:
+summary(efa_model$scores)
+
+scores <- efa_model$scores
+
+scores %>%
+  as_tibble() %>%
+  ggplot(aes(x = MR1)) +
+  geom_density()
+```
+
+## Multi factor EFA
+
+
+First, let's prep the dataset:
+```{r}
+data(bfi)
+
+bfi_raw <- bfi
+head(bfi_raw)
+
+bfi <- bfi_raw %>%
+  select(-gender, -education, -age)
+
+
+N <- nrow(bfi)
+indices <- seq(1, N)
+indices_EFA_bfi <- sample(indices, floor((.5*N)))
+indices_CFA_bfi <- indices[!(indices %in% indices_EFA)]
+
+# Use those indices to split the dataset into halves for your EFA and CFA
+bfi_EFA <- bfi[indices_EFA_bfi, ]
+bfi_CFA <- bfi[indices_CFA_bfi, ]
+```
+
+The second step in most EFA is to find out how many factors can properly capture variation in the larger set of variables.
+
+We will want to use Eigenvalues (called the Kaiser or eigenvalue criterion) to do an empirical approach (atheoretical). First you need a correlation matrix and then use the eigen value.  Looking for values greater than 1 when deciding how many factors to look at.
+```{r}
+bfi_efa_cor <- cor(bfi_EFA, use = "pairwise.complete.obs")
+eingvals <- eigen(bfi_efa_cor)
+
+eingvals$values
+
+scree(bfi_efa_cor, factors = FALSE)
+```
+
+The results of the eigen function and the scree plot show that we should probably have around 6 factors.
+
+
+### Sidenote: Difference between EFA and CFA
+
+
+Factors are the mathematical compliment to a theoretical construct (CFscores and ideology).  
+
+- How we generally do EFA: no theory -> Exploratory analysis -> interpretation (difficult to inerpret without theory, factor loadings: meaning can somtime be inferred from patterns).
+- How we generally do CFA: theory -> confirmatory analysis -> interpretation (model fit: how well the hypothesized model fits the data. Factor loading: how well the items measure their corresponding constructs).
+
+### Running a multidimensional EFA
+
+```{r}
+efa_model <- fa(bfi_EFA, nfactors = 6)
+```
+
+This will show us how they have load onto each factor.  Those with no results for a factor mean that they were removed because they were negligable.  The user has to infer the meaning of a factor based on the factors (MR5 seems to be agreeableness).
+```{r}
+efa_model
+
+efa_model$loadings
+```
+
+### Factor scores
+
+This time we get scores for all 6 factors.  Warning: don't interpret factor scores until you have a theory.  Additionally, those with missing values will not get scores.
+```{r}
+head(efa_model$scores)
+```
+
+
+### Interpreting model fit
+
+There are two general ways to evaluate hte model fit:
+
+1. Absolute fit statistic have intrinsic meaning and suggested cutoff values. Include chi-square test, Tucker-Lewis Index, and Root Mean Square Error of Approximation
+2. relative fit statistics only have meaning when comparing models (BIC)
+
+Absolute fit statistics have common cutoff values (what you want to see):
+1. Chi-square test: non-significant result (difficult to get)
+2. TLI > 0.9 (how well the observed data fit the expected)
+3. RMSEA: < 0.05 (differences between observed and expected)
+
+All of these are available when you look at the model object
+
+```{r}
+efa_model
+
+# 1. chi square is sig which is bad(unsurprising given sample size)
+# 2. TLI = 0.911 which is good
+# 3. RMSEA: 0.02 which is good
+# 4. BIC -531.45 (can't evaluate how good it is)
+```
+
+Now let's run a similar model and look at the relative fit (BIC) between two models
+```{r}
+bfi_theory <- fa(bfi_EFA, nfactors = 5)
+bfi_eigen <- fa(bfi_EFA, nfactors = 6)
+
+bfi_theory$BIC # -276
+bfi_eigen$BIC # -531
+```
+
+YOu want a lower BIC which is better with 6 factors than 5
+
+
+
+
+## CFA
+
+Benefits of a confirmatory analysis:
+
+1. Explicitly specified variable/factor relationships
+2. testing a theory that you know in advance
+3. this is the right thing to public when you are developing a new measure
+
+
+Sidenote: When doing CFA and having multiple factors, you will have a moment where you are doing a rotation and have to decide bytween orthoginal or oblique.  Orthogonal assumes the factors are uncorrelated while obligque assumes that factors may be correlated.
+
+One way to do this is to use the results of the EFA
+
+The psych package has a wrapper function to set up a CFA using your EFA model. 
+```{r}
+efa_syn <- structure.sem(efa_model)
+
+efa_syn
+```
+
+Let's interpret the results for the first observation
+
+- "MR5 -> A1" means that MR5 is pushing the results in A1. Remember that factor analysis says that that underlying latent variable is influencin the results of the observed variable.
+- "F4A1" means that it is factor 4 (F4) even though it is called MR5 (a function of the rotation that occurs when doing the rotation)
+- "NA" for value means that hte stargin value will be chosen at random during estimation.
+
+While structure.sem does a lot of the work for you, you can create CFA syntax from your theory as shown in the code below.  Some tips and tricks: use short and memorable factor names. Assign factors to each factor by doing factor name followed by a comma.  The items are separated by commas.
+
+```{r}
+# Set up syntax specifying which items load onto each factor
+theory_syn_eq <- "
+AGE: A1, A2, A3, A4, A5
+CON: C1, C2, C3, C4, C5
+EXT: E1, E2, E3, E4, E5
+NEU: N1, N2, N3, N4, N5
+OPE: O1, O2, O3, O4, O5
+"
+
+# Feed the syntax in to have variances and covariances automatically added
+theory_syn <- cfa(text = theory_syn_eq, 
+                  reference.indicators = FALSE)
+
+theory_syn
+```
+
+
+Now it is time to actually run the CFA using the `sem` function. For this you wil need to specify the theoretically developed above and then plug in your data.
+
+```{r}
+theory_cfa <- sem(theory_syn, data = bfi_CFA)
+
+summary(theory_cfa)
+```
+
+How to interpret this: for the Agreeableness factor, we see that item A3 has a load of 0.973 and is the item most strongly related to our AGE factor.
+
+
+### Investigating model fit
+
+Just like with BFA, we will want to report model fit statistics:
+
+1. Chi-square test (aka the log likelihood test) which is the only default.  We don't want sig, but almost always get it because of sample size
+
+
+One way to get more statistics is to specify which ones we want using `options()`:
+
+```{r}
+options(fit.indices = c("CFI", "GFI", "RMSEA", "BIC"))
+
+summary(theory_cfa)
+```
+
+Now we get a few more stats that we can report:
+
+1. RMSEA: want < 0.05
+2. GFI (Goodness of Fit Index): want > 0.9
+3. CFI (Comparative Fit Index): want > 0.9
+
+
+I note that we barely miss all of these statistics
+
+The relevative fit statistic is BIC (used to compare models).
+
+```{r}
+summary(theory_cfa)$BIC
+```
+
+### CFA 
+```{r}
+theory_cfa_scores <- fscores(theory_cfa)
+
+head(theory_cfa_scores)
+```
+
+
+## Refining your measure and/or model
+
+
+### Differences between EFA and CFA
+
+EFA:
+
+1. Estimates all possible/factor relatiosnhips
+2. Looking for patterns in the data
+3. Use when you don't have a well-developed theory
+
+CFA:
+
+1. Only specified variable/factor relationships
+2. Testing a theory that you know in advance
+3. This is what you publish
+
+
+Because you are using different halves and have different purposes, you get different outputs.
+
+EFA give you one row per item and many columns for the potential factors.  CFA give you one row per factor/variable relationship and returns only statistics related to the theoretical factor.
+
+```{r}
+# View the first five rows of the EFA loadings
+efa_model$loadings[1:5,]
+
+# View the first five loadings from the CFA estimated from the EFA results
+summary(theory_cfa)$coeff[1:5,]
+```
+
+
+
+Lots of times you will want to compare factor scores:
+
+```{r}
+efa_scores <- efa_model$scores # getting scores for the efa model of the bfi_EFA dataset
+
+cfa_scores_diff <- fscores(theory_cfa, data = bfi_EFA) # using CFA model to get EFA data results
+
+
+plot(density(efa_scores[, 1], na.rm = TRUE),
+     xlim = c(-3, 3), ylim = c(0, 1), col = "blue") # blue line for the efa model
+lines(density(cfa_scores_diff[, 1], na.rm = TRUE),
+     xlim = c(-3, 3), ylim = c(0, 1), col = "red") # red line is the scores for the cfa model
+```
+
+Graph shows that the scores are different meaning that the factor estimates are different. the CFA is more normal while the blue is flatter.
+
+
+### Adding loadings to improve fit
+
+Remember:
+
+1. EFA estimate all item/factor loadins
+2. CFAs only estimate specified loadings
+3. Poor model fit could be due to exlcuding loadings
+
+This may mean that you need to make adjustments to your CFA
+
+One potential solution is to look at the EFA results and see if additional factors.  In regard to our BFI, the EFA found that we might be able to add N4 to the Extraversion facotr and E3 to Neuorticism.  This is because they seem to be somewhat correlated. THough you want to do this while thinking about your theory.
+
+
+How to add new loadings: simply add them to your loadings syntax and load that into a new cfa equation:
+
+```{r}
+theory_syn_add <- "
+AGE: A1, A2, A3, A4, A5
+CON: C1, C2, C3, C4, C5
+EXT: E1, E2, E3, E4, E5, N4
+NEU: N1, N2, N3, N4, N5, E3
+OPE: O1, O2, O3, O4, O5
+"
+
+# now convertin to sem-compatible syntax
+theory_syn_2 <- cfa(text = theory_syn_add, reference.indicators = FALSE)
+
+
+# run CFA with revised syntax
+theory_cfa_add <- sem(theory_syn_2, data = bfi_CFA)
+```
+
+
+Now let's conduct a likelihood ratio test:
+```{r}
+anova(theory_cfa, theory_cfa_add)
+```
+
+Our new model is significantly better!
+
+```{r}
+summary(theory_cfa)$CFI
+summary(theory_cfa_add)$CFI # higher which is good!
+
+summary(theory_cfa)$RMSEA
+summary(theory_cfa_add)$RMSEA # slight improvmenet (lower), but still not at 0.05.
+
+summary(theory_cfa)$BIC
+summary(theory_cfa_add)$BIC # lower (which is better)
+```
+
+
+### Removing Loadings to improve fit
+
+here we will remove 04 to improve fit
+
+```{r}
+theory_syn_delete <- "
+AGE: A1, A2, A3, A4, A5
+CON: C1, C2, C3, C4, C5
+EXT: E1, E2, E3, E4, E5
+NEU: N1, N2, N3, N4, N5
+OPE: O1, O2, O3, O5
+"
+
+theory_syn_3 <- cfa(text = theory_syn_delete, reference.indicators = FALSE)
+
+theory_cfa_delete <- sem(theory_syn_3, data = bfi_CFA)
+```
+
+We can't run the anovabecasue we have different datasets
+```{r}
+summary(theory_cfa_delete) # none of our indicators are good enough
+
+
+summary(theory_cfa_delete)$CFI # better fit
+summary(theory_cfa)$CFI
+
+summary(theory_cfa_delete)$RMSEA # slightly better fit
+summary(theory_cfa)$RMSEA
+
+summary(theory_cfa_delete)$BIC # better fit
+summary(theory_cfa)$BIC
+```
+
+### Next steps
+
+I would delete the 04, but also do the adding variables to get the best model.
+
+## PCA
+
+
+
+
