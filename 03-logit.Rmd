@@ -1,0 +1,219 @@
+# Logit Models
+
+OLS regression is only proper when the dependent variable is continuous, or is similar to continuous variables.  But what happens when the data is just a 0/1, Yes/No, Pass/Fail?  In this case the OLS model is not the best way to proceed.  Instead we want to move to logit (or probit) models.
+
+## Introducing Logit Models
+
+There are a number of different models that can be run with a binary regression model (BRM) including: Linear Probability Model, Logit Model, Probit Mode, and the Log-Log model.  Most commonly we choose between the Logit and Probit model.  The logit model in the past has been the default because the error distribution assumptions decreased the computing cost for the probability distribution function.  The decision between the logit and probit are essentially arbitrary because the major difference between them (the distribution of the error term) is something we cannot tested.
+
+When specifying a BRM, we make three main assumptions:
+
+1. The threshold for 0 is $\tau = 0$
+2. The Conditional mean of $\epsilon$ is 0: $E(\epsilon | X) = 0$
+3. The conditional variance of $\epsilon$ is constant: $Var(\epsilon|X = 1)$ for probit models and $Var(\epsilon|X = \pi/3)$ for logit models.
+
+We also assume that there is an unobserved latent variable that we cannot fully observe, but only observe the cut point (pass/fail).  We assume that our observed x's are linearly related to the latent variable $y^*$.  
+
+## Example of Logit Model
+
+
+To show an example of a logit model at work, we will examine the titanic dataset.  Specifically we will use the titanic package and load the titanic_train dataset.  The Dependent Variable is `Survived` which indicates whether the person survived.  Our regressors in this analysis are: Passenger Class (`Pclass`), Sex (`Sex`), and Age (`Age`).
+```{r}
+library(titanic)
+library(tidyverse)
+library(modelr)
+
+titanic <- titanic_train
+```
+
+
+Our model in this case is:
+
+$Pr(Surv = 1) = F(\beta_0 + \beta_1Class + \beta_2Sex + \beta_3AGe + \beta_4Cabin)$
+
+Now lets specify the model in R:
+
+```{r}
+model <- glm(Survived ~ Pclass + Sex + Age, family = "binomial", data = titanic)
+```
+
+The code to run the model is very similar to that of an OLS regression.  The left hand side of the assignment operator, `<-`, is the name of the object you are creating.  On the right is the actual model you are running.  First is the `glm` which standards for Generalized Linear Models.  Just like with OLS regression, the dependent variable is on the left of the tilde `~`.  The right side includes the independent variables. In our case the dependent variable is Survived and the independent variables include: Pclass, Sex, and age.  The family option tells the `glm()` function the type of dependent variable you have. In this case we have a binomial dependent variable.  Unless you specify otherwise, the default link function is the a logit model.  See this quick [page](https://www.statmethods.net/advstats/glm.html) describing the basics of the `glm()` function.  Lastly, we always have to call our dataset.
+
+
+Now let's take a look at the model.
+```{r}
+summary(model)
+```
+
+When it comes to variables, we are looking for directionality and significance (we are given log odds for the coefficient estimate).  Remember that the dependent variable is whether the passenger survived. Each of our variables are negative meaning that as they increase, the probability of surviving the titanic crash is lowered.  Specifically, as you go up in passenger class and age you are less likely to survive.  Men (compared to women) are less likely to survive.  All three independent variables are significant at virtually all accepted levels.  Lastly, we notice that our AIC is listed at 655.29.  This is not informative by itself, but can help when comparing this to other models.  In its raw form, coefficient estimates cannot tell us magnitude.  Additional steps are necessary to get predictions.
+
+If we did, however, want to get something of substance to report in the table, you can take the exponent of the estimate.  This will give you the *odds ratio*.  Monogan states that: "the *odds* of an event is the ratio fo the probability the event occurs to the probabiliity it does not occur $\dfrac{p}{1- p}$.  The odds ratio tells us the multiplicatvie factor by which the odds will change for a unit increase in the predictor."  We can compute it as follows:
+
+```{r}
+exp(model$coefficients[-1])
+```
+
+If hte odds ratio is 1, the coefficient has no effect. If less than 1 then coefficient shows a decrease in odds (less likely to survive).  More than 1 indicates an increase in odds (more likely to survive).  
+
+In the code above, I excluded the intercept with `[-1]`.  The 0.963 indicates that as you go up in age by 1 year, the odds that you will survive decrease by 0.96, all else equal.  If you prefer percentages:
+
+```{r}
+100 * (exp(model$coefficients[-1])-1)
+```
+
+In this case as you increase in age, your odds of surviving decrease by 3.6%.
+
+
+If you wanted to graph the results, you can use the funtion `tidy()` as we did in the previous chapter, or you can utilizie the `coef()` and `confint()` functions to extract both the estimate and the confidence intervals.  I am showing the second version to show that you can do many things in one way.  This rquires a little bit more work (doing the as_tibble, cbind, mutate, and rename), but leads to the same results.  A caution against this graph is that right now it looks like age is not significant, but the number is just really small.
+```{r}
+coefs <- coef(model)
+intervals <- confint(model)
+
+as_tibble(cbind(intervals, coefs)) %>%
+  mutate(variables = rownames(intervals)) %>%
+  rename("lower" = 1,
+         "upper" = 2) %>%
+  ggplot(aes(x = variables, y = coefs)) +
+  geom_point() +
+  geom_pointrange(aes(ymin = lower, ymax = upper)) +
+  geom_hline(yintercept = 0, color = "red", size = 1) +
+  coord_flip()
+```
+
+
+## Assumptions
+
+1.	DV is dichotomous
+2.	Only include IVs that should empirically or theoretically matter
+3.	Include all relevant IVs (up to a point)
+4.	Large sample size.
+a.	Minimum Number of observations per category
+5.	Linearity of predictors and logit of the outcome
+6.	Influential values
+7.	Multicollinearity
+
+
+Check out this website for help: http://www.sthda.com/english/articles/36-classification-methods-essentials/148-logistic-regression-assumptions-and-diagnostics-in-r/
+
+
+### Normality
+
+We assume normality between our continuous variables and our logit outcome.
+```{r}
+summary(model)
+
+probabilities <- predict(model, type = "response")
+
+
+assumptions <- titanic %>%
+  select(Age, Pclass, Sex) %>%
+  na.omit() %>% # getting rid of NAs
+  select(Age) %>% # select numeric IVs
+  mutate(logit = log(probabilities / (1 - probabilities))) # getting logit results
+
+assumptions %>%
+  ggplot(aes(Age, logit)) +
+  geom_point() +
+  geom_smooth(method = "loess")
+```
+
+### No Influential Outcomes
+
+Trying to identify which observations may be messing with the model
+```{r}
+plot(model, which = 4) 
+```
+
+### Multicollinearity
+
+```{r}
+car::vif(model)
+```
+
+## Minimum Number of observations
+
+No hard and fast rule.  General agreement ranges between needing 10-20 observations per category.  Our dataset seems fine.
+
+```{r}
+titanic %>%
+  na.omit() %>%
+  count(Pclass, Sex)
+```
+
+Additional rules of thumbs for logit models is that you want as a floor 100 observations, with at least 10-15 observations for the number of independent variables in the model.  If you violate any of these rules, you are opening yourself up to unstable models.
+
+
+
+## Adding Predictions
+
+Given that the direct output of a logit model is not particularly helpful.  It is nice to create graphs of predicted probabilities.  These graphs, generally, create a simulated dataset that is similar to the dataset used to create the model, but will vary one variable while holding the others constant.
+
+The cleanest way that I know of how to make a new dataset is to use the `data_grid`.  The code below calls our original dataset `titanic`, then calls the `data_grid` function.  Within the data_grid function you call the variable you wish to vary, in our case I picked `Age`.  the `.model = model` tells data_grid that we want to use all of the predictors in the model we ran, filling them at their typical values (mean or mode).  For some reason, the function seems to want to always add in a last `NA` row at the end so I am filtering it out.
+
+Continuing in the tidy format, we call the `add_predictions(model, type = "respone")` which comes from the `modelr` package.  Here we are taking this new dataset we have made with `data_grid` and adding predictiosn based off of the results of our model.  The key difference in this line of code compared to OLS is the additional argument of `type = "response"` which tells R that we want predicted probabilities.  
+
+After creating the predictions, it now becomes a simple graphing problem of figuring out what kind of variable you have for the x-axis and determining the appropriate graph.  In this case, the most appropiate would be either a line graph or scatterplot.
+```{r}
+titanic %>%
+  data_grid(Age, .model = model) %>%
+  filter(!is.na(Age)) %>%
+  add_predictions(model, type = "response") %>%
+  ggplot(aes(x = Age, y = pred)) +
+  geom_line()
+```
+
+
+
+
+Now let's repeat the process for gender:
+
+```{r}
+titanic %>%
+  data_grid(Sex, .model = model) %>%
+  add_predictions(model, type = "response") %>%
+  ggplot(aes(x = Sex, y = pred)) +
+  geom_col()
+```
+
+Basically, don't be a guy if you want to survive.
+
+<center>
+![](titanic_meme.jpg)
+<\center>
+
+
+## How did our model do? 
+
+One fun way to see how the model performs is to look at a confusion matrix.  To create a confusion matrix, have hte model spit out probabilities on the actual data.  Then create a new variable that is equal to 1 if the probability is .50 or higher and 0 otherwise.  Then you simply have a table that compares the predicted outcome (1,0) to the actual (1,0). The ones that are in the top left and bottom right are the ones that the model correctly predicted, with the other two spots as the mis-classifications.
+
+
+```{r}
+confusion <- titanic 
+
+prediction <- predict(model, confusion, type = "response")
+
+predicted_classes <- ifelse(prediction > 0.5, 1, 0)
+
+predicted_classes <- as.factor(predicted_classes)
+
+table(titanic$Survived, predicted_classes)
+```
+
+In this case our model correct guessed 356 people not surviving and 207 people as surviving.  It incorrectly guessed at 83 would die that actually survived and 68 as surviving who actually died.  If we take the correct over total we get the following:
+
+```{r}
+(356 + 207)/(356 + 207 + 83 + 68)
+```
+
+So we can correctly predict 78.8%.  This is a good improvement than if we just guessed everyone drowned (the model category).  
+
+```{r}
+table(titanic$Survived)
+
+549/(549 + 342)
+```
+
+
+## Final Words
+
+This introduction ignored the assumptions that underly logit models.  We also ignored probit models.  For a better understanding of how these models work, I recommend "Regression Models for Categorical and Limited Dpeendent Variables" by J. Scott Long

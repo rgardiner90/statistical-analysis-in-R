@@ -1,0 +1,114 @@
+# Ordered Logit Models
+
+## Data and Packages
+
+```{r}
+library(tidyverse)
+library(modelr)
+library(haven)
+library(broom)
+
+satisfaction <- read_dta("http://j.mp/SINGHejpr")
+```
+
+
+In this dataset we want to model each respondent's level of satisfaction with democracy.  This variable can be a 1, 2, 3, 4.  We can say they are ordered, but we don't know the distance.  4 is Very satisfied.  Because they are ordered, we should run an ordered logit/probit.
+
+## Running the Model
+
+We will likely want to use the polr (proportional odds logistic regression) command from the MASS package.  
+
+```{r}
+library(MASS)
+library(effects)
+
+satisfaction$satisfaction <- ordered(as.factor(satisfaction$satisfaction))
+
+ideology_satis <- polr(satisfaction ~ voted_ideo*winner + abstained +
+                         educ + efficacy + majoritarian_prez + freedom + gdppercapPPP +
+                         gdpgrowth + CPI + prez,
+                       method = "logistic", data = satisfaction)
+summary(ideology_satis)
+
+
+```
+
+Note that the polr command requires that our outcome variable is ordered numerically.  Also notice the interaction term.  While the output shows t-values, they are actually z values since maximum likelihood methods typically call for z ratios.  Lastly, note the different intercept cutpoints.  These are generally not of interest to us, but are useful when it comes to making predictions.
+
+
+If we wanted to get the p-value of a specific variable (voted_ideo:winner for instance) then we could run the following code with the z ratio.
+```{r}
+1 - pnorm(5.0957)
+```
+
+We can conclude with 99.9% confidence that the coefficient on the interaction term is greater than zero.
+
+
+A nice teature of using the logit link function is that the results can be inerpreted in terms of odd ratios, though they have to be computed differently for ordinal models compared to logit models. FOr logit models, we must exponentiate the negative value of a coefficient and interpret the odds of being in lower groups relative to higher groups.  For example: the odds ratio for our coefficients from the model above can be produced by the following code:
+
+
+```{r}
+100*(exp(-ideology_satis$coefficients)-1)
+```
+
+
+If, for instance, we wanted to interpret the influence of efficiency, then we could say that for a one point incrase on a five point efficacy scale, the odds a respondent will report that they are "not at all satisfied" with democracy relative to any of the three categories decrease by 15%, all else equal.  Also, the odds that a respondent will report "not at all satisfied" or "not very satisfied" relative to the two higher categories also decrease by 15%, all else equal.  In general then, we can interpret the oddds ratio for an ordered logit as shaping the odds of all optiosn below a threshold relative to all options above a threshold.  
+
+
+## Gettin predictions:
+
+Here I am doing the discrete class predicted, not the predicted probabilities.  If you want to see predicted probabilities, see the section of `Graphing the Tidy Way`.
+
+Somewhat uninteresting is that all of them are expected to be in the 3rd category.
+```{r}
+new_data <- satisfaction %>%
+  data_grid(efficacy, .model = ideology_satis)
+  
+
+new_data <- new_data %>%
+  mutate(pred_class = predict(ideology_satis, new_data, type = "class"))
+
+new_data
+```
+
+
+
+
+## Showing predictions
+```{r}
+Effect(focal.predictors = c("voted_ideo", "winner"), ideology_satis)
+
+
+plot(Effect(focal.predictors = c("voted_ideo", "winner"), ideology_satis))
+```
+
+
+```{r}
+plot(Effect(focal.predictors = "efficacy", ideology_satis))
+```
+
+
+## Graphing in a Tidy Way
+
+I am not sure if I have greally graphed this correctly, but this is what I could come up with.
+```{r}
+pred <- predict(ideology_satis, type = "probs")
+
+
+prediction <- cbind(satisfaction, pred)
+
+
+prediction %>%
+  rename("one" = 22,
+         "two" = 23,
+         "three" = 24,
+         "four" = 25) %>%
+  dplyr::select(efficacy, one, two, three, four) %>%
+  gather(outcome, prediction, -efficacy) %>%
+  mutate(outcome = factor(outcome, levels = c("one", "two", "three", "four"))) %>%
+  ggplot(aes(x = prediction, fill = as.factor(efficacy))) +
+  geom_histogram() +
+  facet_wrap(efficacy~outcome, ncol = 4) +
+  labs(fill = "Efficacy Levels")
+```
+

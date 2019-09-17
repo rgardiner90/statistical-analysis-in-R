@@ -1,0 +1,472 @@
+# OLS
+
+```{r, include=FALSE}
+library(gapminder)
+library(tidyverse)
+library(stargazer)
+library(car)
+library(broom)
+library(scales)
+library(lmtest)
+library(modelr)
+
+theme_set(theme_light())
+
+gapminder <- gapminder %>%
+  mutate(gdpPercap = log10(gdpPercap))
+```
+
+OLS regression is the backbone of statistics (though not actually used that often because of the restrictions that come with it).  The basic goal of OLS regression is to understand the relationship between one more more independent variables and some dependent variable.  OLS regression is said to be *BLUE* under certain circumastances:
+
+- B: best
+- L: linear
+- U: unbiased
+- E: estimator
+
+Under assumptions that will be discussed later, OLS regression will be unbiased (errors are evenly distributed) and the one with the smallest errors.  It is also the best model to use under these assumptions. OLS regression is also very easy to interpret.  For all of these reasons (and more), it is one of the first statistical methods taught in graduate methods sections. These do assume, however, that you understand t statistics, standard errors, and the basics of hypothesis testing.
+
+## Intuition
+
+Keeping it simple, a bivariate regression looks for the relationship between two variables (sometimes referrred to as vectors).  Visually you can see it in the graph below (gapminder library was already loaded and `mutate`d so that Life Expectancy is on a logarithmic scale).
+
+```{r}
+gapminder %>%
+  ggplot(aes(x = gdpPercap, y = lifeExp)) +
+  geom_point() +
+  labs(x = "Logged GDP/capita", y = "Life Expectancy")
+```
+
+
+You can see a general positive trend between the logged GDP per Capita and Life expectancy.  To see this as a hypothesis, you would say that "countries with higher GPD per capita have a higher life expectancy" or "as a country gets richer, the life expectancy increases."  
+
+In the code below, the red line would be considered our hypothesis.
+
+```{r}
+gapminder %>%
+  ggplot(aes(x = gdpPercap, y = lifeExp)) +
+  geom_point() +
+  geom_abline(intercept = -10, slope = 20, color = "red", lty = 2, size = 2) +
+  labs(x = "Logged GDP/capita", y = "Life Expectancy")
+```
+
+## Running your first regression
+
+
+Our argument about the connection between logged GDP per captia and life expectancy can be shown in three slightly different ways:
+
+1. Hypothesis: Countries with higher GPD per capita has a higher life expectancy
+2. Mathematical: $LifeExp_i = \alpha + \beta (Logged GDP/Capita_i) + \epsilon_i$
+3. R code: `model1 <- lm(lifeExp ~ gdpPercap, data = gapminder)`
+
+The generalizable mathematical formula is actually $Y_i = \alpha + \beta X_i + \epsilon_i$, but I find this to be confusing if introduced before the actual formula.  For the R code, the `lm` stands for linear model. Within the parentheses you need to specify your dependent variable, DV, to the left of the tilde `~` and your independent variable, IV, to the right.  Lastly, you need to specify the dataset where the variables are located, `data = gapminder` (technically you can use the `DATASET$VARIABLE` notation, but that gets impractical later).  
+
+```{r}
+model1 <- lm(lifeExp ~ gdpPercap, data = gapminder)
+
+summary(model1)
+```
+
+By calling `summary(model1)` we are able to see the influence of the logged GDP per capita on life expectancy.  The first thing we see is the formula we used to create the model.  Next we see some summary statistics about our residuals (distance between our regression line and the observation).  Under the coefficients section we see our `intercept` and `log10(gdpPercap)`.  The intercept is the location on the y-axis when our independent variable is equal to 0.  In many instances, we have no interest in interpreting the intercept.  For instance, our model says that when the logged GDP of a country is 0 (which is undefined because logarithm is only for values greater than 0), the life expectancy for that country is -9, another ridiculous number.  Again, this is common.  The intercept only becomes important later when making your own predictions.
+
+Our main interest is in our independent variable, the log of GPD per capita.  We see that there is a positive relationship between the log of GPD per capita and life expectancy. Additionally, we see that the t-statistic is rather large and the variable is significant at all standard social science levels.  The last statistic I want to highlight is the $R^2$ which basically shows us how much of the variation in life expectancy is explained by the log of GDP per capita.
+
+
+To get a table more common in articles or presentations, try using the `stargazer` table from the stargazer package.  This table shows the same basic data as the summary with slight stylistic differences.  We specified that we wanted the `type = "text"` because the default is $\LaTeX$ code.  There are a lot of ways to customize a stargazer table, but the basics do most of what we need.
+
+```{r}
+stargazer(model1, type = "type")
+```
+
+
+We can see the relationship in the following graph.  The red line is the graphical manifistation of our model (pretty close to the original red line).  
+
+```{r}
+gapminder %>%
+  ggplot(aes(x = gdpPercap, y = lifeExp)) +
+  geom_point() +
+  geom_smooth(method = "lm", color = "red") +
+  labs(x = "Logged GDP/capita", y = "Life Expectancy")
+```
+
+
+## Advancing to Multiple Regression
+
+We see that there is a connection between the wealth of a country (`logged GPDPercap`) and `lifeExp`, but could this relationship be a function of the continent where someone resides?  In bivariate regression you do not know about potentially confounding variables.  Additionally, you may have more than just one hypothesis.  Lots of research only specifies one relationship (a bi-variate relationship) when the real world is much more complicated.  To get over this hurdle, we have to introduce additional variables, thus changing from bivariate to multiple variable regression (sometimes referred to as multi-variate regression). The formula is very similar in R, but there are additional assumptions that need to be made (next section).  Here is the code for running a multiple regression:
+
+```{r}
+model2 <- lm(lifeExp ~ gdpPercap + continent, data = gapminder)
+```
+
+The line of code is almost exactly the same (I actually just copied and pasted this from above), with the only addition is the inclusion of `+ continent`.  That is it!  Nothing too crazy to move beyond bivariate.  But now you can make claims that you might have heard before, such as: "all else equal" or "holding everything constant".  But before we make claims, let's check out the results.
+
+```{r}
+summary(model2)
+```
+
+We see from the results that the `gdpPercap` is still significant and positive, though the slope is a little smaller.  We also see the output for four continents: Americas, Asia, Europe, Oceania. It appears that the gapminder dataset combines North and South America (something I wouldn't recommend if this were my own data).  Whenever we have a categorical variable like this, one category must be left out as the "holdout" or "baseline" category.  In this instance, Africa is the holdout category (you can do some magic if you want a different baseline category, but it is generally not that important).  All statements that are based on the findings for each continent has to be done in relationship to Africa.
+
+How do you interpret the model?  Let's start with GDP/capita. The interpretation is almost completely the same, but with a slight addition.  Our model predicts that for a log10 unit increase in GDP/capita (e.g., going from 1-dollar per capita to 10-dollars per capita), we expect the average life expectancy for a country to increase by 14.7 years, **all else equal**.  This means that while considering the continent of that country (or yet another way: regardless of the continent), there is still a positive relationship between GDP/capita and life expectancy.
+
+Interpreting the other variables is pretty simple.  Given that we are comparing to Africa, we would say that countries in the Americas are predicted to have a 7 year higher average life expectancy, regardless of the GDP per capita (you could again say all else equal).  Countries in Asia also have a higher life expectancy compared to Africa. 
+
+Now I would only make these statements if there is a statistically significant relationship (generally determined based off of a p-value).  If we have made the determination that a variable is not statistically significant, than we are unable to confidently say the direction of the effect.
+
+
+## Checking Assumptions
+
+Now we need to check for the different assumptions that go along with OLS regression.  If we violate any of hte most common Gauss-Markov assumptions then we may have either an inefficient or biased model.  Both are not good.  
+For those who want a quick introduction, this [website](https://www.albert.io/blog/key-assumptions-of-ols-econometrics-review/) seemed to have a good introduction.
+
+In this first section I will show some formal tests for the assumptions, then show how to check the assumptions using graphs. Fox (2008) argues that almost the same exact conclusions can be made using graphs, and a lot more information is gained.
+
+### Normality
+
+One of our first assumptions is that the errors, the distance between our regression line and the actual value, are normally distributed.  
+
+One formal numeric technique to determine if our errors are normally distributed is the Jarque Bera Normality test (using the `moments`) package.  While not a true Gauss-Markov assumptions, it is necessary if we want to trust our predictions. The null hypothesis is that we errors are normally distributed.  In this instance, we want the null hypothesis to be true.  Unfortunately, the test shows us that we should reject the null hypothesis that the errors are normally distributed. 
+
+
+```{r, message=FALSE, message=FALSE}
+library(moments)
+
+gapminder_results <- gapminder %>%
+  add_residuals(model2) %>%
+  add_predictions(model2)
+
+
+jarque.test(gapminder_results$resid)
+```
+
+
+### Heteroskedasticity
+
+One of the assumptions of OLS is that you have constant variance in the residuals (homoskedasticity).  Residuals (another term for "error") are best described as the distance between your model and your actual data (they are also known as "left-overs").  You would expect that the distance between your data and the predicted outcome to be the same across all observations (across all continents and GDP/capita).  Otherwise you will have a biased model.
+
+You can use the `car` package's `ncvTest` which is the Breush-Pagan test or Non-constant error variance test.  For this one, you are looking at the p-value and making a normal hypothesis test with the null hypothesis being that there is homoskedasticity.
+
+```{r}
+ncvTest(model2)
+```
+
+Here we definitely show significance and need to use some sort of fix for this problem.  With heteroskedasticity, your results will be biased and inefficient.  The most common way to fix this problem is to use Huber-White robust standard erros (also known as sandwich standard errors).  This doesn't actually fix the problem of inefficiency, but does help wih the bias.  
+
+
+### Multicollinearity 
+
+In multiple regression we assume that there is "no perfect multicollinearity".  If you are at this point, you don't have this problem. R would not compute the model correctly if you had multicollienarity problems.  To have a perfectly multicollinearity would happen if we included GDP per capita in dollars and Pesos.  These variables would have a correlation of 1 because it is showing the exact same data.  While we do not have to worry about perfect multicollinearity, we do want to see if there is high multicollinearity in our model.  If we do, we basically have a redundant predictor and our model could be unstable when introduced to slight changes in the data.  
+
+One example of multicollinearity occuring is when we are looking at bar passage and include multiple law school GPAs (first-year, first-semester, and final).  First-year and first-semester should be closely tied given that half of all the information stored in first-year comes from first-semester.  Not to mention a student's past performance is a fairly good predictor of future performance.
+
+Using the `car` package, we want to check to see if we have a problem with multicollinearity by using the *variance inflation factor* or VIF.  For each of our covariates we will get a VIF score.  As a rule of thumb, whenever your VIF exceeds 10, we can start to believe that our model is being shaped by the multicollinearity.  To give you an idea, a VIF of 10 means that 90% of hte variance of one predictor can be explained by the other predictors.  Unlike other test statistics though, there is no hard and fast number.  You really have to take this in context of the findings.
+
+```{r}
+vif(model2)
+```
+
+In our case, the VIF scores for each variable fit in the normal range.  No problems here, moving on.
+
+
+### Outliers and leverage
+
+If only a few observations are driving our results, then we may not be able to trust our model.  There are three general types of problems (note, a lot of this discussion was adapted based off of *Political Analysis Using R* by James E. Monogon III):
+
+1. Outliers: observations with exceedingly large residuals
+2. Leverage points: takes a value of a predictor that is disproportionately distant from other values
+3. Influence points: outliers with a lot of leverage
+
+Influence points are particularly problemsome because they can mess up our model the most.
+
+By creating scatterplots, we can start to gain an idea of different problems.  "If an observation stands out on the predictor's scale then it has leverage. If it stands out on the residual scale then it is an outlier.  If it stands out on both dimensions, then it is an influence point."  Using the `influenceIndexPlot` from the `car` package, we can see the different indicators that we are having an issue.  For instance, a value of 1 for Cook's distance would indicate the presence of influential data points.  Studentized residuals detect outliers, and hat values detect leverage points.  We can see here that there are a few points that seem problematic, but it is up to the researcher to determine how to handle the data (you can delete them but you open yourself up to bias).
+
+```{r}
+influenceIndexPlot(model2, vars = c("Cook", "Studentized", "hat"), id.n = 5)
+```
+
+It appears that a few points (853, 854, etc) are showing some influence on the model.  We can isolate to see which variables might be causing the problem.  From the results below, it appears that Kuwait may be a problem country for our model.  We might need to investigate this further.  
+```{r}
+gapminder %>%
+  mutate(rowNumber = row_number()) %>%
+  filter(rowNumber > 850,
+         rowNumber < 860)
+```
+
+
+### Autocorrelation
+
+Another assumption of OLS regression is that our errors are not correlated.  Autocorrelation is less of an issue with cross-sectional studies and more with times series.  In our case, we are wondering if the life expectancy in Argentina in 2006 to look pretty similar to Argentina in 2007.  If so, we may have a problem of autocorrelation.
+
+To test for this assumption, we can use the Durbin Watson Test.  You will get a D-W Statistic which will range from 0 to 4, with a score of 2 showing no autocorrelation.  You will see a p-value that tests the null hypothesis that there is no correlation among the residual (meaning the residuals are independent).
+
+```{r}
+dwtest(model2)
+```
+
+As seems to be the fate for us, we are once again violating another assumption.  In this case we would conclude that there is evidence of autocorrelation in our model.
+
+### Graphing the assumptions
+
+The last section primarily looked at the assumptions using formal test statistics that are not always the best way to move forward.  In most cases, you can gain a better understanding of the data by looking at it graphically.  To the best of my ability, we will do that here.
+
+#### Normality
+
+To test normality earlier we relied on the `jarque.test`.  If you wanted to look at this another way you, you could look at the quantile-quantile (Q-Q) plot.
+
+The quantile-quantile (Q-Q) plot tests the assumption that our data really does come from a theoretically normal distribution (the code below requires the `car` package).  You want the observations to fall along the blue line.  In general, you will have some points off of the line, but you want to stay close.  We can see here that the left-side of the plot shows a major deviation starting around -1.5.
+
+```{r}
+qqPlot(model2)
+```
+
+a less informative, but easier to understand option is to do a histogram of residuals.
+
+Again we are seeing a long left tail. Both of these are showing the same basic problem that was showing in our empirical test.
+```{r, warning = FALSE, message=FALSE}
+ggplot(gapminder_results, aes(resid)) +
+  geom_histogram() +
+  geom_vline(xintercept = 0, color = "black", size = 2)
+```
+
+One more time to really bring it home.  Now we are looking at a density plot.  While we do have a good peak at 0, we are still struggling with that long tail.
+
+```{r}
+ggplot(gapminder_results, aes(resid)) +
+  geom_density()
+```
+
+These three graphs along with our formal test above lead us to believe that we are violating the normality assumption.
+
+#### Constant Variance 
+
+When seeing if we have constant variance of the error (residual) term, we want to see if we are mistaken pretty evenly across all values.
+
+Another good idea is to look at residuals as we go across different values of the independent variables.  Using a scatterplot, we are lookin to see if our errors are evenly distributed around 0 and are consistent for all of our predicted values.  It appears that as we move to the higher end of the x-axis we are seeing more  values reaching into the -20.  This would again show that we may be suffering from heteroskedasticity.  You will also see that as we get to the higher numbers, we are seeing very few large positive values. 
+
+```{r}
+ggplot(gapminder_results, aes(x = pred, y = resid)) +
+  geom_point()
+```
+
+This makes me wonder if any particular continent is showing particularly high average squared residuals. Here I want to look at the mean squared residuals for each continent. The squaring is necessary to make sure that negative and positive values aren't cancelling each other out (you could also take the absolute values).  The model appears to be really good with Europe and OCeania, but struggles a lot with the other 3.
+
+```{r}
+gapminder_results %>%
+  group_by(continent) %>%
+  mutate(squared_resid = resid^2) %>%
+  summarise(average_squared_resid = mean(squared_resid)) %>%
+  ggplot(aes(x = continent, y = average_squared_resid)) +
+  geom_col() +
+  labs(y = "Average Squared Residual")
+```
+
+Seeing the results above, it makes me wonder where Asia is showing up in regard to the scatterplot right above.  I am actually goin to show the same scatterplot for comparing the residuals across the our fitted values, but this time coloring by continent. 
+
+```{r}
+ggplot(gapminder_results, aes(x = pred, y = resid, color = continent)) +
+  geom_point() 
+```
+
+Here we can see that there a lot of the large outlier values are coming from Asia!  Now here is my next bet. I bet a lot of those points are actually comin from the same country. Tt is unlikely that countries drastically change from year-to-year, but let's see if we are correct.  
+
+To do this I am just going to add the `geom_text`, but I am subsetting the results to only include results where the absoluate value of the residuals is 15.  To clean up the data a little, I am also looking at values for the x-axis above 3.5.
+
+```{r}
+ggplot(gapminder_results, aes(x = pred, y = resid, color = continent)) +
+  geom_point() +
+  geom_text(data = subset(gapminder_results,
+                          abs(resid) > 15 &
+                          pred > 60),
+            aes(label = country))
+```
+
+As expected, the errors are correlated!  This also provides evidence we saw earlier that we are liekly suffering from autocorrelation.  This is happening because our data are not truly randomly drawn, but are correlated at two points in time. If you think about it in terms of GDP, the GDP of Saudi Arabia in 2010 is likely very close to the GDP in Saudi Arabia in 2009 and 2011.  Thus, the errors are likely going to be very similar (as is shown in the figure above).
+
+These few graphs tell us basically the same data as the formal tests above, but hopefully we are getting a better intuition behind what is driving these assumptions and what they mean.
+
+
+
+#### Multicollinearity
+
+The multicollinearity issue is one that is easily shown in graphical form.  Using the `GGally` package's `ggpair()` function, we can create a scatterplot of our different variables (taking out country).  First you want to select the relevant variables from the dataset, then call `ggpairs()`.  If you have a lot of variables, this becomes unwieldy fairly quickly, but should be okay for an analyst with around 7 variables (you can also run this multiple times with different variables).  Again, the true assumptions is that you don't have perfect multicollinearity, so if you have gotten this far, you are likely okay in that regard.  This one is just starting to show you if you have a little bit more than you would like.  Here we are looking pretty good.
+
+
+```{r}
+library(GGally)
+
+gapminder %>%
+  select(year, lifeExp, pop, gdpPercap, continent) %>%
+  ggpairs()
+```
+
+#### Expected mean of 0 for errors
+
+One assumption we have is that the errors should be averaged around 0 (otherwise you will have a biased model).  One simple way to show this is to show a boxplot (note that earlier histograms and density plots also pretty much showed this).  In this regard we seem to be doing okay.  The median value (thicker black bar in the box) is right around 0. Note that this graph is also showing us a similar result as before.  It appears that we have some real outliers on the lower side.
+
+```{r}
+ggplot(gapminder_results, aes(x = "residuals", y = resid)) +
+  geom_boxplot()
+```
+
+
+
+
+## Addressing any assumption violations
+
+1. Normality
+2. Heteroskedasticity
+3. Autocorrelation
+
+
+### Normality
+
+There are two common options when you violate the normality assumption:
+
+1. Transform the DV
+2. Use a generalized linear model (GLM)
+
+Transforming the dependent variable allows us to keep using OLS, but we have changed the function form and we still would want to test that the measure actually helped us overcome the non-normality in the first place.  The second method, GLM, allows us to fit different distributions (e.g., poisson distribution) which may better fit our results.
+
+
+After a number of tests, no common transformation worked with the dataset.  I would recommend opting for a option 2.
+
+
+### Heteroskedasticity
+
+Using the `lmtest` and `sandwich` packages, we can obtain those robust standard errors.  You will see that getting the coefficients are the same with both the lines is the same, but the standard errors, t-stats and p-values are different.  If you wanted a different method, you could use Weighted Least Squares regression (WLS), but that is for another text.  The WLS will be a better estimate than simply using robust standard errors, but that is only true if we have properly modeled the error variance.
+
+```{r, warning = FALSE, message = FALSE}
+library(sandwich)
+library(lmtest)
+
+summary(model2)
+coeftest(model2, vcov = vcovHC)
+```
+
+
+
+### Autocorrelation
+
+
+One of the first steps to check when you are showing autocorrelation is to see if you are missing a key independent variable.  Only hypothesis is that we need to also include `year` in the model.  
+```{r}
+model3 <- lm(lifeExp ~ gdpPercap + continent + year, data = gapminder)
+
+summary(model3)
+```
+
+Now we can apply the `dwtest` again, but unfortunately we still see this problem.
+```{r}
+dwtest(model3)
+```
+
+At this point you would want to consider moving onto a more sophisticated times series analysis looking at ARIMA models.  DataCamp offers courses on times series analysis that may help.
+
+## Displaying Results
+
+Now that you have done the analyses, you know if you need to make any changes before you start to display the results (it is not worth making predictions if we aren't sure if the model is worth anything).  
+
+### Tables
+
+One of the simplest methods to get a table is to use the `stargazer` command which comes from the `stargazer` package.  The commands for this are pretty simple, you can simply call `stargazer(model2, type = "text")` to get something that you can read in R.
+
+```{r}
+stargazer(model2, type = "text")
+```
+
+If you do not specify the type, the command will print out the $\LaTeX$ code to make the same table, which is very hard for a human to read the print out.  
+
+There are a number of ways to customize the table to include even multiple models (great when you have slight variations).  You can even show different output.
+
+```{r}
+stargazer(model1, model2, type = "text", report = ('vc*p'))
+```
+
+In the code above, I told stargazer to include both of the models we created earlier. In addition I used the `report` option to get different outputs:
+
+- c: Coefficient
+- V: Variable name
+- *: significance stars
+- p: p-values
+
+These are the four basic things I like to include, but there are many different options.  
+
+As mentioned, this is not quite production ready.  I would recommend actually having stargazer create a new word document usin the `out` option and then specifying a file path/name.  Also, having the table type be html makes this a lot easier to manipulate.  
+
+```{r}
+# stargazer(model1, model2, type = "html", report = ('cv*p'), out = "example table.doc")
+```
+
+All of this being said, I would actually not use the stargazer table for model2 because we know we suffer from heteroskedasticity.  Instead I would call the `coeftest(model2, vcov = vcovHC)` again and hand create a table from that.
+
+
+### Coefplots
+
+
+Coefficient Plots, also referred to as coefplots, are a great way to show visually what a standard table reports.  Here we are using the `broom` package's `tidy()` function to get a tidy data frame of our output.  The tidy() function will return one row for every term (variable including the intercept) and a column for the term, estimate (coefficient), standard error, test statistic, and pvalue.  
+
+```{r}
+tidy(model2)
+```
+
+The nicest thing about the tidy() function is that it allows you to use the tidyverse framework.  In the code below I am creating a 95% confidence interval using the `mutate` command.  First I am getting the low end of the confidence interval by subtracting the `1.96 * std.error` from the coefficient estimate.  The I repeat, but add to create the high end of estimate.  Lastly, I am reordering the variable `term` knowing that later this will make the graph look nicer.  Now I have everything I need to create a coefplot!
+
+```{r}
+tidy(model2) %>%
+  mutate(low = estimate - (1.96 * std.error),
+         high = estimate + (1.96 * std.error),
+         term = fct_reorder(term, estimate))
+```
+
+When graphing I have decided to make a geom_point with the x axis being the term, and the y to be location of the estimate. The next line allows us to get an idea of our 95% confidence interval using `geom_pointrange()`.  This allows us to use our new variables `low` and `high` to create a line line.  Then we add the geom_hline with a y-intercept of 0 to help the viewer determine if the variable is significant at a 95% confidence level.  If the estimate or the confidence band (created by geom_pointrange) crosses the red line, then we cannot reject the null hypothesis.  Lastly, I do a coord_flip() to make it easier to read the graph (will flip our axes so that the x now looks like the y and the y looks like the x)
+```{r}
+tidy(model2) %>%
+  mutate(low = estimate - (1.96 * std.error),
+         high = estimate + (1.96 * std.error),
+         term = fct_reorder(term, estimate)) %>%
+  ggplot(aes(x = term, y = estimate)) +
+  geom_point() +
+  geom_pointrange(aes(ymin = low, ymax = high)) +
+  geom_hline(yintercept = 0, color = "red", size = 1) +
+  coord_flip()
+```
+
+There are things I would change, such as the labels for the axes and the `term`s, but was made to show you how to do the basics.  You should be able to google these small cosmetic changes.
+
+
+### Graphing predictions
+
+One of the most important aspects running tests is to show your results in a clean format.  While tables and text are possible, graphs are almost always preferred. Here we will show three different graphs for predictions. 
+
+The first graph shows the predictions based off of simulated data that varies `gdpPercap`.  This is easily accomplished with the `modelr` package.  In the code below, we first call the dataset.  Then we call `data_grid` which gets requires one argument: the variable(s) you would like to have vary.  If you specify a `.model` argument, it will fill all covariates at their typical value (mean or mode) of the data used in the model.  If you run the first two lines, it will show two columns.  The first is `gdpPercap` which has different values ranging from the minimum and maximum from the dataset used. The second column is our covariate (in this model we had two variables so there are only two columns here). The third line `add_prediction(model2)`, tells R to take this new dataset and make predictions based off the results of model2.  This command creates a third column called `pred` (predictions).
+
+Once you have this data, it becomes a simple ggplot() problem.  Here I have used `geom_line()` to create a line graph.  Because we used a logarithmic transformation, I have added the `scale_x_log10(labels = comma_format())`.  This puts the x-axis on a logarithmic scale.  The comma_format() is only used to make the graph easier to understand.  
+
+```{r}
+gapminder %>%
+  data_grid(gdpPercap, .model = model2) %>%
+  add_predictions(model2) %>%
+  ggplot(aes(x = gdpPercap, y = pred)) +
+  geom_line() 
+```
+
+The graph below shows similar results, but I added one layer of complexity.  Here I told `data_grid` to vary not only `gdpPercap` but also `continent`.  Now instead of 1704 rows we have 8520 (for those paying attention that is 1704 multiplied by the number of continents). The only other change is that I added the `color = contintent` argument to create a line for each continent.  You will see that each line is parallel to each other.  The difference between each line is the coefficient for each continent.
+
+```{r}
+gapminder %>%
+  data_grid(gdpPercap, continent, .model = model2) %>%
+  add_predictions(model2) %>%
+  ggplot(aes(x = gdpPercap, y = pred, color = continent)) +
+  geom_line() 
+```
+
+The last graph to show is a bar chart (though I used `geom_col()`) of the different predictions for each continent.  This uses almost the same exact code to create the data_grid.  To make the graph look a little nicer, I decided to reorder the continents by prediction `continent = fct_reorder(continent, pred)`.  This isn't necessary, but a nice addition.  
+
+
+```{r}
+gapminder %>%
+  data_grid(continent, .model = model2) %>%
+  add_predictions(model2) %>%
+  mutate(continent = fct_reorder(continent, pred)) %>%
+  ggplot(aes(x = continent, y = pred)) +
+  geom_col()
+```
+

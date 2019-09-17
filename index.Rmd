@@ -1,0 +1,15 @@
+--- 
+title: "Legal Education Analysis in R"
+author: "Richard G. Gardiner"
+date: "`r Sys.Date()`"
+site: bookdown::bookdown_site
+documentclass: book
+description: "This is a minimal example of using the bookdown package to write a book. The output format for this example is bookdown::gitbook."
+---
+
+# About the Book
+
+The book was developed as a personal project by the author in an attempt to store important information about different models for legal education.  Where possible, I attempt to use real law school data to show the examples. This book is free to use within AccessLex, but I only ask that you give attribution.
+
+
+

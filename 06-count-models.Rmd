@@ -1,0 +1,92 @@
+# Count Data
+
+A Poisson distribution is different than a normal distribution in that it only has discrete integers (positive and whole numbers).  A Poisson distribution also have the assumption of equi-dispersion meaning that the mean and variance parameter are the same (somethign commonly broken leading to us using a negative binomial distribution).
+
+
+To run a poisson regression in R you need:
+
+- Discrete counts
+- Defined area and time
+
+As a reminder, our coefficients are on a log-scale.  The formula is a pretty simple variation of the `glm()` framework:
+
+`glm(y ~ x, data = dat, family = 'poisson')`
+
+
+When you shouldn't use poisson distrubtion:
+
+- Non-count or non-positive data (e.g. 1.4 or -2)
+- Non-constant sample area or time 
+- Mean > 30 (can probably use a normal distrubition)
+- Over-dispersed data
+- Zero-inflated data
+
+
+Poisson models are multiplicative because of the exponent link function: $\lambda = e^{(\beta_0 + \beta_mx_m + \epsilon)}$.  This also means that the coefficients are not interpretable until you take the exponent.
+
+# let's fit the first one:
+
+This dataset is coming from Louisville data on civilian fire victim data.  First we will run a linear model then compare it with the count data. 
+
+This data is appropriate for count models because it is a whole number (people) and can't ever be negative.
+
+```{r}
+library(tidyverse)
+library(broom)
+library(modelr)
+
+fire <- read_csv("Data/count_fire_data.csv") %>%
+  mutate(month = as.factor(month))
+```
+
+
+```{r}
+linear <- lm(victims ~ month, data = fire)
+count <- glm(victims ~ month, data = fire, family = "poisson")
+```
+
+```{r}
+summary(linear)
+```
+
+```{r}
+summary(count)
+```
+
+Note how the count model is better able to determine which months were significant.
+
+
+## Understanding coefficients
+
+We can start to directly interpret the coefficients directly.  Though the text is no longer "are the coefficients different from zero" and are now "are they different from 1"?  This is because they are on the exponential-scale rather than a raw-scale.
+```{r}
+tidy(count, exponentiate = TRUE)
+```
+
+
+
+
+## making predictions
+
+Recall that the Poisson slope and intercept estimates are on the natural log scale and can be exponentiated to be more easily understood. You can do this by specifying type = "response" with the pred function.
+
+```{r}
+fire %>%
+  data_grid(month, .model = count) %>%
+  add_predictions(count, type = "response")
+```
+
+## Plotting Poisson Regression Models
+
+geom_smooth works best with continuous predictors.  Otherise you likely want to use a boxplot.
+
+```{r}
+bus <- read_csv("https://assets.datacamp.com/production/repositories/2698/datasets/e368234a66bbabc19b8da1fb42d3e1027508d710/busData.csv")
+```
+
+```{r}
+ggplot(bus, aes(x = MilesOneWay, y = CommuteDays)) +
+  geom_jitter(witdh = 0.05, height = 0.05) +
+  geom_smooth(method = "glm", method.args = list(family = "poisson"))
+```
+

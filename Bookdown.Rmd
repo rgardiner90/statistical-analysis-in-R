@@ -1,0 +1,1109 @@
+--- 
+title: "Legal Education Analysis in R"
+author: "Richard G. Gardiner"
+date: "`r Sys.Date()`"
+site: bookdown::bookdown_site
+documentclass: book
+description: "This is a minimal example of using the bookdown package to write a book. The output format for this example is bookdown::gitbook."
+---
+
+# About the Book
+
+The book was developed as a personal project by the author in an attempt to store important information about different models for legal education.  Where possible, I attempt to use real law school data to show the examples. This book is free to use within AccessLex, but I only ask that you give attribution.
+
+
+
+
+<!--chapter:end:index.Rmd-->
+
+# Introduction {#intro}
+
+This is a placeholder for the introduction
+
+<!--chapter:end:01-intro.Rmd-->
+
+# OLS
+
+```{r, include=FALSE}
+library(gapminder)
+library(tidyverse)
+library(stargazer)
+library(car)
+library(broom)
+library(scales)
+
+theme_set(theme_light())
+
+gapminder <- gapminder
+```
+
+OLS regression is the backbone of statistics (though not actually used that often because of the restrictions that come with it).  The basic goal of OLS regression is to understand the relationship between one more more independent variables and some dependent variable.  OLS regression is said to be *BLUE* under certain circumastances:
+
+- B: best
+- L: linear
+- U: unbiased
+- E: estimator
+
+Under assumptions that will be discussed later, OLS regression will be unbiased (errors are evenly distributed) and the one with the smallest errors.  It is also the best model to use under these assumptions. OLS regression is also very easy to interpret.  For all of these reasons (and more), it is one of the first statistical methods taught in graduate methods sections. These do assume, however, that you understand t statistics, standard errors, and the basics of hypothesis testing.
+
+## Intuition
+
+Keeping it simple, a bivariate regression looks for the relationship between two variables (sometimes referrred to as vectors).  Visually you can see it in the graph below (gapminder library was already loaded).
+
+```{r}
+gapminder %>%
+  ggplot(aes(x = gdpPercap, y = lifeExp)) +
+  geom_point() +
+  scale_x_log10(labels = scales::comma_format()) +
+  labs(x = "Logged GDP/capita", y = "Life Expectancy")
+```
+
+
+You can see a general positive trend between the logged GDP per Capita and Life expectancy.  To see this as a hypothesis, you would say that "countries with higher GPD per capita have a higher life expectancy" or "as a country gets richer, the life expectancy increases."  
+
+In the code below, the red line would be considered our hypothesis.
+
+```{r}
+gapminder %>%
+  ggplot(aes(x = gdpPercap, y = lifeExp)) +
+  geom_point() +
+  scale_x_log10(labels = scales::comma_format()) +
+  geom_abline(intercept = -10, slope = 20, color = "red", lty = 2, size = 2) +
+  labs(x = "Logged GDP/capita", y = "Life Expectancy")
+```
+
+## Running your first regression
+
+
+Our argument about the connection between logged GDP per captia and life expectancy can be shown in three slightly different ways:
+
+1. Hypothesis: Countries with higher GPD per capita has a higher life expectancy
+2. Mathematical: $LifeExp_i = \alpha + \beta (Logged GDP/Capita_i) + \epsilon_i$
+3. R code: `model1 <- lm(lifeExp ~ log10(gdpPercap), data = gapminder)`
+
+The generalizable mathematical formula is actually $Y_i = \alpha + \beta X_i + \epsilon_i$, but I find this to be confusing if introduced before the actual formula.  For the R code, the `lm` stands for linear model. Within the parentheses you need to specify your dependent variable, DV, to the left of the tilde `~` and your independent variable, IV, to the right.  Lastly, you need to specify the dataset where the variables are located, `data = gapminder` (technically you can use the `DATASET$VARIABLE` notation, but that gets impractical later).  Generally, you do not need to worry about the `log10()`, but prior knowledge says that GDP generally requires a logarithmic transformation.
+
+```{r}
+model1 <- lm(lifeExp ~ log10(gdpPercap), data = gapminder)
+```
+
+By calling `summary(model1)` we are able to see the influence of the logged GDP per capita on life expectancy.  The first thing we see is the formula we used to create the model.  Next we see some summary statistics about our residuals (distance between our regression line and the observation).  Under the coefficients section we see our `intercept` and `log10(gdpPercap)`.  The intercept is the location on the y-axis when our independent variable is equal to 0.  In many instances, we have no interest in interpreting the intercept.  For instance, our model says that when the logged GDP of a country is 0 (which is undefined because logarithm is only for values greater than 0), the life expectancy for that country is -9, another ridiculous number.  Again, this is common.
+
+Our main interest is in our independent variable, the log of GPD per capita.  We see that there is a positive relationship between the log of GPD per capita and life expectancy. Additionally, we see that the t statistic is rather large and the variable is significant at all standard social science levels.  The last statistic I want to highlight is the $R^2$ which basically shows us how much of the variation in life expectancy is explained by the log of GDP per capita.
+```{r}
+summary(model1)
+```
+
+To get a table more common in articles or presentations, try using the `stargazer` table from the stargazer package.  This table shows the same basic data as the summary with slight stylistic differences.  We specified that we wanted the `type = "text"` because the default is $\LaTeX$ code.  There are a lot of ways to customize a stargazer table, but the basics do most of what we need.
+
+```{r}
+stargazer(model1, type = "text")
+```
+
+
+We can see the relationship in the following graph.  The red line is the graphical manifistation of our model (pretty close to the original red line).  
+
+```{r}
+gapminder %>%
+  ggplot(aes(x = gdpPercap, y = lifeExp)) +
+  geom_point() +
+  scale_x_log10(labels = scales::comma_format()) +
+  geom_smooth(method = "lm", color = "red") +
+  labs(x = "Logged GDP/capita", y = "Life Expectancy")
+```
+
+
+## Advancing to Multiple Regression
+
+We see that there is a connection between the wealth of a country (`logged GPDPercap`) and `lifeExp`, but could this relationship be a function of the continent where someone resides?  In bivariate regression you do not know about potentially confounding variables.  Additionally, you may have more than just one hypothesis.  Lots of research only specifies one relationship (a bi-variate relationship) when the real world is much more complicated.  To get over this hurdle, we have introduce additional variables, thus changing from bivariate to multiple variable regression (sometimes referred to as multi-variate regression). The formula is very similar in R, but there are additional assumptions that need to be made (the next section).  Here is the code for running a multiple regression:
+
+```{r}
+model2 <- lm(lifeExp ~ log10(gdpPercap) + continent, data = gapminder)
+```
+
+The line of code is almost exactly the same (I actually just copied and pasted this from above), with the only addition is the inclusion of `+ continent`.  That is it!  Nothing too crazy to move beyond bivariate.  But now you can make claims that you might have heard before, such as: "all else equal", "holding everything constant".  But before we make claims, let's check out the results.
+
+```{r}
+summary(model2)
+```
+
+We see from the results that the `log10(gdpPercap)` is still significant and positive, though the slope is a little smaller.  We also see the output for four continents: Americas, Asia, Europe, Oceania. It appears that the gapminder dataset combines North and South America (something I wouldn't recommend if this were my own data).  Whenever we have a categorical variable like this, one category must be left out as the "holdout" or "baseline" category.  In this instance, Africa is the holdout category (you can do some magic if you want a different baseline category, but it is generally not that important).  All statements that are based on the findings for each continent has to be done in relationship to Africa.
+
+How do you interpret the model?  Let's start with GDP/capita. The interpretation is almost completely the same, but with a slight addition.  Our model predicts that for a log10 unit increase in GDP/capita (going from 1-dollar per capita to 10-dollars per capita), we expect the average life expectancy for a country to increase by 14.7 years, **all else equal**.  This means that while considering the continent of that country (or yet another way: regardless of the continent), there is still a positive relationship between GDP/capita and life expectancy.
+
+Interpreting the other variables is pretty simple.  Given that we are comparing to Africa, we would say that countries in the Americas are predicted to have a 7 year higher average life expectancy, regardless of the GDP per capita (you could again say all else equal).  Countries in Asia also have a higher life expectancy compared to Africa. 
+
+Now I would only make these statements if there is a statistically significant relationship (generally determined based off of a p-value).  If we have made the determination that a variable is not statistically significant, than we are unable to confidently say the direction of the effect.
+
+
+## Checking Assumptions
+
+Now we need to check for the different assumptions that go along with OLS regression.  For those who want a quick introduction, this [website](https://www.albert.io/blog/key-assumptions-of-ols-econometrics-review/) seemed to have a good introduction.
+
+### Normality
+
+The first question is whether we have a normal distribution.  The quantile-quantile (Q-Q) plot tests the assumption that our data really does come from a theoretically normal distribution (the code below requires the `car` package).  You want the observations to fall along the blue line.  In general, you will have some points off of the line. This is not a hard and fast rule.  This assumption should be checked carefully for models that are small n (around 50).  For this model, we are following fairly close to the line, and do not appear to be wildly violating the normality assumption.
+
+```{r}
+qqPlot(model2)
+```
+
+a less informative, but easier to understand option is to do a histogram of residuals.
+
+Another more check on the residuals using a histogram.  I am looking here to just see that our residuals are, overall, primarily around 0.  We do see a little tail here to the left, but nothing that is too crazy.
+```{r, warning = FALSE, message=FALSE}
+library(modelr)
+
+gapminder_results <- gapminder %>%
+  add_residuals(model2)
+
+ggplot(gapminder_results, aes(resid)) +
+  geom_histogram() +
+  geom_vline(xintercept = 0, color = "black", size = 2)
+```
+
+Here we are seeing that our results appear to be somewhat normally distributed, but it does have a longer tail on the left.
+
+Another numeric technique to determine if our errors are normally distributed is the Jarque Bera Normality test (using the `moments`) package.  From here we reject the null hypothesis that the errors are normally distributed. While not a true Gauss-Markov assumptions, we may want to consider using a generalized linear model which allows us to fit a different distribution.
+
+```{r, message=FALSE, message=FALSE}
+library(moments)
+
+jarque.test(gapminder_results$resid)
+```
+
+
+
+### Heteroskedasticity
+
+One of the assumptions of OLS is that you have constant variance in the residuals (homoskedasticity).  Residuals are best described as the distance between your model and your actual data (they are also known as the error term or "left-overs").  You would expect that the distance between your data and the predicted outcome to be the same across all observations (across all continents and GDP/capita).  Otherwise you will have a biased model.
+
+There are two different ways to look for Heteroskedasticity.  First is the graphical look.  Calling the `plot()` function with the model included will produce 4 graphs.  You want to look primarily at the fist chart.  If you do violate the assumption of homoskedasticity (hence, you have heteroskedasticity) then you would see equal distribution of point around 0 for across the x-axis. 
+
+I would note that the other 3 charts are also checks on your model.  The second chart is another Q-Q plot. Feel free to dive deeper into these charts, but I am going to move on.
+
+```{r}
+plot(model2)
+```
+
+
+If you want a more formal test of heteroskedasticity, you use the `car` package's `ncvTest` which is the Breush-Pagan test or Non-constant error variance test.  For this one, you are looking at the p-value and making a normal hypothesis test with the null hypothesis being that there is homoskedasticity.
+
+
+
+```{r}
+ncvTest(model2)
+```
+
+Here we definitely show significance and need to use some sort of fix for this problem.  With heteroskedasticity, your results will be biased and inefficient.  The most common way to fix this problem is to use Huber-White robust standard erros (also known as sandwich standard errors).  This doesn't actually fix the problem of inefficiency, but does help wih the bias.  
+
+Using the `lmtest` and `sandwich` packages, we can obtain those robust standard errors.  You will see that getting the coefficients are the same with both the lines is the same, but the standard errors, t-stats and p-values are different.  If you wanted a different method, you could use Weighted Least Squares regression (WLS), but that is for another text.  The WLS will be a better estimate than simply using robust standard errors, but that is only true if we have properly modeled the error variance.
+
+```{r, warning = FALSE, message = FALSE}
+library(sandwich)
+library(lmtest)
+
+summary(model2)
+coeftest(model2, vcov = vcovHC)
+```
+
+You can use these results to present in your results.
+
+### Multicollinearity 
+
+In multiple regression we assume that there is "no perfect multicollinearity".  If you are at this point, you don't have this problem. R would not compute the model correctly if you had multicollienarity problems.  To have a perfectly multicollinearity would happen if we included GDP per capita in dollars and Pesos.  These variables would have a correlation of 1 because it is showing the exact same data.  While we do not have to worry about perfect multicollinearity, we do want to see if there is high multicollinearity in our model.  If we do, we basically have a redundant predictor and our model could be unstable when introduced to slight changes in the data.  
+
+
+Using the `car` package, we want to check to see if we have a problem with multicollinearity by using the *variance inflation factor* or VIF.  For each of our covariates we will get a VIF score.  The minimum value is 1 and you should only start poking around if you have a score over 5.  Though, as a rule of thumb, whenever your VIF exceeds 10, we can start to believe that our model is being shaped by the multicollinearity.  To give you an idea, a VIF of 10 means that 90% of hte variance of one predictor can be explained by the other predictors.  Unlike other test statistics though, there is no hard and fast number.  You really have to take this in context of the findings.
+
+```{r}
+vif(model2)
+```
+
+In our case, the VIF scores for each variable fit in the normal range.  No problems here, moving on.
+
+
+### Outliers and leverage
+
+If only a few observations are driving our results, then we may not be able to trust our model.  There are three general types of problems (note, a lot of this discussion was adapted based off of *Political Analysis Using R* by James E. Monogon III):
+
+1. Outliers: observations with exceedingly large residuals
+2. Leverage points: takes a value of a predictor that is disproportionately distant from other values
+3. Influence points: outliers with a lot of leverage
+
+Influence points are particularly problemsome because they can mess up our model the most.
+
+
+By creating scatterplots, we can start to gain an idea of different problems.  "If an observation stands out on the predictor's scale then it has leverage. If it stands out on the residual scale then it is an outlier.  If it stands out on both dimensions, then it is an influence point."  Using the `influenceIndexPlot` from the `car` package, we can see the different indicators that we are having an issue.  For instance, a value of 1 for Cook's distance would indicatre the presence of influential data points.  Studentized residuals detect outliers, and hat values detect leverage points.  We can see here that there are a few points that seem problematic, but it is up to the researcher to determine how to handle the data (you can delete them but you open yourself up to bias).
+
+```{r}
+influenceIndexPlot(model2, vars = c("Cook", "Studentized", "hat"), id.n = 5)
+```
+
+
+### Autocorrelation
+
+NOTE: I am skipping this assumption because it is primarily concerning times series, but I am including a small discussion and code for discussing autocorrelation.  
+
+Another assumption of OLS regression is that our errors are not correlated.  This is grouped into the "independence" assumption of "iid".  Autocorrelation is less of an issue with cross-sectional studies and more with times series.  For instance, if you are looking at the GDP of a country over time, you would expect that the best predictor of GDP or the U.S. is the GDP of the U.S. the previous year.  This means that there is autocorrelation and we are violating the independence assumption..
+
+To test for this assumption, we can use the Durbin Watson Test.  You will get a D-W Statistic which will range from 0 to 4, with a score of 2 showing no autocorrelation.  You will see a p-value that tests the null hypothesis that there is no correlation among the residual (meaning the residuals are independent).   
+```{r}
+durbinWatsonTest(model2)
+dwtest(model2)
+```
+
+NEEDT TO DO SOMETHING ABOUT THE AUTOCORRELATION (PROBABLY AN AR(1))
+
+
+
+At this point, I am satisfied that we are not seriously violating any assumption.  Now I am at a point where I okay with moving onto predictions.  While predictions are the fun part of a model, it is not advised until you do the hard work of checking assumptions.  If you do this out of order, you risk giving predictions based off of a bad model.  I particularly like the quote: "all models are wrong but some are useful." - George E.P. Box
+
+
+
+
+### Residual Analysis
+
+Beyond the formal tests, it is also good to see how your model does with residuals against your different independent variables.  The first code creates a new data frame (using the school_1 data) and then adds the residual for each observation. What follows is a series of plots to see how the residuals are distributed.  Use this to see if your residuals are showing a pattern, or seem to be roughly random (or normally distributed).
+
+The first bit of code creates a new dataset, `school_1_graduation` using `school_1` then uses the `modelr` package to `add_residuals` passing in our `graduation_gpa_model`.  
+
+```{r}
+ggplot(gapminder_results, aes(resid)) +
+  geom_density()
+
+ggplot(gapminder_results, aes(x = log10(gdpPercap), y = resid)) +
+  geom_point()
+
+gapminder_results %>%
+  group_by(continent) %>%
+  mutate(squared_resid = resid^2) %>%
+  summarise(average_squared_resid = mean(squared_resid)) %>%
+  ggplot(aes(x = continent, y = average_squared_resid)) +
+  geom_col() +
+  labs(y = "Average Squared Residual")
+```
+
+
+
+
+## Displaying Results
+
+Now that you have done the analyses, you know if you need to make any changes before you start to display the results (it is not worth making predictions if we aren't sure if the model is worth anything).  
+
+### Tables
+
+One of the simplest methods to get a table is to use the `stargazer` command which comes from the `stargazer` package.  The commands for this are pretty simple, you can simply call `stargazer(model2, type = "text")` to get something that you can read in R.
+
+```{r}
+stargazer(model2, type = "text")
+```
+
+If you do not specify the type, the command will print out the $\LaTeX$ code to make the same table, which is very hard for a human to read the print out.  
+
+There are a number of ways to customize the table to include even multiple models (great when you have slight variations).  You can even show different output.
+
+```{r}
+stargazer(model1, model2, type = "text", report = ('vc*p'))
+```
+
+In the code above, I told stargazer to include both of the models we created earlier. In addition I used the `report` option to get different outputs:
+
+- c: Coefficient
+- V: Variable name
+- *: significance stars
+- p: p-values
+
+These are the four basic things I like to include, but there are many different options.  
+
+As mentioned, this is not quite production ready.  I would recommend actually having stargazer create a new word document usin the `out` option and then specifying a file path/name.  Also, having the table type be html makes this a lot easier to manipulate.  
+
+```{r}
+# stargazer(model1, model2, type = "html", report = ('cv*p'), out = "example table.doc")
+```
+
+All of this being said, I would actually not use the stargazer table for model2 because we know we suffer from heteroskedasticity.  Instead I would call the `coeftest(model2, vcov = vcovHC)` again and hand create a table from that.
+
+
+### Coefplots
+
+
+Coefficient Plots, also referred to as coefplots, are a great way to show visually what a standard table reports.  Here we are using the `broom` package's `tidy()` function to get a tidy data frame of our output.  The tidy() function will return one row for every term (variable including the intercept) and a column for the term, estimate (coefficient), standard error, test statistic, and pvalue.  
+
+```{r}
+tidy(model2)
+```
+
+The nicest thing about the tidy() function is that it allows you to use the tidyverse framework.  In the code below I am creating a 95% confidence interval using the `mutate` command.  First I am getting the low end of the confidence interval by subtracting the `1.96 * std.error` from the coefficient estimate.  The I repeat, but add to create the high end of estimate.  Lastly, I am reordering the variable `term` knowing that later this will make the graph look nicer.  Now I have everything I need to create a coefplot!
+
+```{r}
+tidy(model2) %>%
+  mutate(low = estimate - (1.96 * std.error),
+         high = estimate + (1.96 * std.error),
+         term = fct_reorder(term, estimate))
+```
+
+When graphing I have decided to make a geom_point with the x axis being the term, and the y to be location of the estimate. The next line allows us to get an idea of our 95% confidence interval using `geom_pointrange()`.  This allows us to use our new variables `low` and `high` to create a line line.  Then we add the geom_hline with a y-intercept of 0 to help the viewer determine if the variable is significant at a 95% confidence level.  If the estimate or the confidence band (created by geom_pointrange) crosses the red line, then we cannot reject the null hypothesis.  Lastly, I do a coord_flip() to make it easier to read the graph (will flip our axes so that the x now looks like the y and the y looks like the x)
+```{r}
+tidy(model2) %>%
+  mutate(low = estimate - (1.96 * std.error),
+         high = estimate + (1.96 * std.error),
+         term = fct_reorder(term, estimate)) %>%
+  ggplot(aes(x = term, y = estimate)) +
+  geom_point() +
+  geom_pointrange(aes(ymin = low, ymax = high)) +
+  geom_hline(yintercept = 0, color = "red", size = 1) +
+  coord_flip()
+```
+
+There are things I would change, such as the labels for the axes and the `term`s, but was made to show you how to do the basics.  You should be able to google these small cosmetic changes.
+
+
+### Graphing predictions
+
+One of the most important aspects running tests is to show your results in a clean format.  While tables and text are possible, graphs are almost always preferred. Here we will show three different graphs for predictions. 
+
+The first graph shows the predictions based off of simulated data that varies `gdpPercap`.  This is easily accomplished with the `modelr` package.  In the code below, we first call the dataset.  Then we call `data_grid` which gets requires one argument: the variable(s) you would like to have vary.  If you specify a `.model` argument, it will fill all covariates at their typical value (mean or mode) of the data used in the model.  If you run the first two lines, it will show two columns.  The first is `gdpPercap` which has different values ranging from the minimum and maximum from the dataset used. The second column is our covariate (in this model we had two variables so there are only two columns here). The third line `add_prediction(model2)`, tells R to take this new dataset and make predictions based off the results of model2.  This command creates a third column called `pred` (predictions).
+
+Once you have this data, it becomes a simple ggplot() problem.  Here I have used `geom_line()` to create a line graph.  Because we used a logarithmic transformation, I have added the `scale_x_log10(labels = comma_format())`.  This puts the x-axis on a logarithmic scale.  The comma_format() is only used to make the graph easier to understand.  
+
+```{r}
+gapminder %>%
+  data_grid(gdpPercap, .model = model2) %>%
+  add_predictions(model2) %>%
+  ggplot(aes(x = gdpPercap, y = pred)) +
+  geom_line() +
+  scale_x_log10(labels = comma_format()) 
+```
+
+The graph below shows similar results, but I added one layer of complexity.  Here I told `data_grid` to vary not only `gdpPercap` but also `continent`.  Now instead of 1704 rows we have 8520 (for those paying attention that is 1704 multiplied by the number of continents). The only other change is that I added the `color = contintent` argument to create a line for each continent.  You will see that each line is parallel to each other.  The difference between each line is the coefficient for each continent.
+
+```{r}
+gapminder %>%
+  data_grid(gdpPercap, continent, .model = model2) %>%
+  add_predictions(model2) %>%
+  ggplot(aes(x = gdpPercap, y = pred, color = continent)) +
+  geom_line() +
+  scale_x_log10(labels = scales::comma_format()) 
+```
+
+The last graph to show is a bar chart (though I used `geom_col()`) of the different predictions for each continent.  This uses almost the same exact code to create the data_grid.  To make the graph look a little nicer, I decided to reorder the continents by prediction `continent = fct_reorder(continent, pred)`.  This isn't necessary, but a nice addition.  
+
+
+```{r}
+gapminder %>%
+  data_grid(continent, .model = model2) %>%
+  add_predictions(model2) %>%
+  mutate(continent = fct_reorder(continent, pred)) %>%
+  ggplot(aes(x = continent, y = pred)) +
+  geom_col()
+```
+
+
+```{r}
+?add_predictions
+```
+
+
+
+
+
+<!--chapter:end:02-OLS.Rmd-->
+
+# Logit Models
+
+## Introducing Logit Models
+There are a number of different models that can be run with a binary regression model (BRM) including: Linear Probability Model, Logit Model, Probit Mode, and the Log-Log model.  Most commonly we choose between the Logit and Probit model.  The logit model in the past has been the default because the error distribution assumptions decreased the computing cost for the probability distribution function.  The decision between the logit and probit are essentially arbitrary because the major difference between them (the distribution of the error term) is something we cannot tested.
+
+When specifying a BRM, we make three main assumptions:
+
+1. The threshold for 0 is $\tau = 0$
+2. The Conditional mean of $\epsilon$ is 0: $E(\epsilon | X) = 0$
+3. The conditional variance of $\epsilon$ is constant: $Var(\epsilon|X = 1)$ for probit models and $Var(\epsilon|X = \pi/3)$ for logit models.
+
+We also assume that there is an unobserved latent variable that we cannot fully observe, but only observe the cut point (pass/fail).  We assume that our observed x's are linearly related to the latent variable $y^*$.  
+
+## Example of Logit Model
+
+
+To show an example of a logit model at work, we will examine the titanic dataset.  Specifically we will use the titanic package and load the titanic_train dataset.  The Dependent Variable is `Survived` which indicates whether the person survived.  Our regressors in this analysis are: Passenger Class (`Pclass`), Sex (`Sex`), and Age (`Age`).
+```{r}
+library(titanic)
+library(tidyverse)
+library(modelr)
+
+titanic <- titanic_train
+```
+
+
+Our model in this case is:
+
+$Pr(Surv = 1) = F(\beta_0 + \beta_1Class + \beta_2Sex + \beta_3AGe + \beta_4Cabin)$
+
+Now lets specify the model in R:
+
+```{r}
+model <- glm(Survived ~ Pclass + Sex + Age, family = "binomial", data = titanic)
+```
+
+The code to run the model is very similar to that of an OLS regression.  The left hand side of the assignment operator, `<-`, is the name of the object you are creating.  On the right is the actual model you are running.  First is the `glm` which standards for Generalized Linear Models.  Just like with OLS regression, the dependent variable is on the left of the tilde `~`.  The right side includes the independent variables. In our case the dependent variable is Survived and the independent variables include: Pclass, Sex, and age.  The family option tells the `glm()` function the type of dependent variable you have. In this case we have a binomial dependent variable.  Unless you specify otherwise, the default link function is the a logit model.  See this quick [page](https://www.statmethods.net/advstats/glm.html) describing the basics of the `glm()` function.  Lastly, we always have to call our dataset.
+
+
+Now let's take a look at the model.
+```{r}
+summary(model)
+```
+
+When it comes to variables, we are looking for directionality and significance (we are given log odds for the coefficient estimate).  Remember that the dependent variable is whether the passenger survived. Each of our variables are negative meaning that as they increase, the probability of surviving the titanic crash is lowered.  Specifically, as you go up in passenger class and age you are less likely to survive.  Men (compared to women) are less likely to survive.  All three independent variables are significant at virtually all accepted levels.  Lastly, we notice that our AIC is listed at 655.29.  This is not informative by itself, but can help when comparing this to other models.  In its raw form, coefficient estimates cannot tell us magnitude.  Additional steps are necessary to get predictions.
+
+If we did, however, want to get something of substance to report in the talbe, you can take the exponent of the estimate.  This will give you the *odds ratio*.  Monogan states that: "the *odds* of an event is the ratio fo the probability the event occurs to the probabiliity it does not occur $\dfrac{p}{1- p}$.  The odds ratio tells us the multiplicatvie factor by which the odds will change for a unit increase in the predictor."  We can compute it as follows:
+
+```{r}
+exp(model$coefficients[-1])
+```
+
+In the code above, I excluded the intercept with `[-1]`.  The 0.963 indicates that as you go up in age by 1 year, theodds that you will survive decrease by 0.96, all else equal.  If you prefer percentages:
+
+```{r}
+100 * (exp(model$coefficients[-1])-1)
+```
+
+In this case as you increase in age, your odds of surviving decrease by 3.6%.
+
+## Adding Predictions
+
+Given that the direct output of a logit model is not particularly helpful.  It is nice to create graphs of predicted probabilities.  These graphs, generally, create a simulated dataset that is similar to the dataset used to create the model, but will vary one variable while holding the others constant.
+
+The cleanest way that I know of how to make a new dataset is to use the `data_grid`.  The code below calls our original dataset `titanic`, then calls the `data_grid` function.  Within the data_grid function you call the variable you wish to vary, in our case I picked `Age`.  the `.model = model` tells data_grid that we want to use all of the predictors in the model we ran, filling them at their typical values (mean or mode).  For some reason, the function seems to want to always add in a last `NA` row at the end so I am filtering it out.
+
+Continuing in the tidy format, we call the `add_predictions(model, type = "respone")` which comes from the `modelr` package.  Here we are taking this new dataset we have made with `data_grid` and adding predictiosn based off of the results of our model.  The key difference in this line of code compared to OLS is the additional argument of `type = "response"` which tells R that we want predicted probabilities.  
+
+After creating the predictions, it now becomes a simple graphing problem of figuring out what kind of variable you have for the x-axis and determining the appropriate graph.  In this case, the most appropiate would be either a line graph or scatterplot.
+```{r}
+titanic %>%
+  data_grid(Age, .model = model) %>%
+  filter(!is.na(Age)) %>%
+  add_predictions(model, type = "response") %>%
+  ggplot(aes(x = Age, y = pred)) +
+  geom_point()
+```
+
+
+
+
+Now let's repeat the process for gender:
+
+```{r}
+titanic %>%
+  data_grid(Sex, .model = model) %>%
+  add_predictions(model, type = "response") %>%
+  ggplot(aes(x = Sex, y = pred)) +
+  geom_col()
+```
+
+Basically, don't be a guy if you want to survive.
+
+<center>
+![](titanic_meme.jpg)
+<\center>
+
+
+## How did our model do? 
+
+One fun way to see how the model performs is to look at a confusion matrix.  To create a confusion matrix, have hte model spit out probabilities on the actual data.  Then create a new variable that is equal to 1 if the probability is .50 or higher and 0 otherwise.  Then you simply have a table that compares the predicted outcome (1,0) to the actual (1,0). The ones that are in the top left and bottom right are the ones that the model correctly predicted, with the other two spots as the mis-classifications.
+
+
+```{r}
+confusion <- titanic 
+
+prediction <- predict(model, confusion, type = "response")
+
+predicted_classes <- ifelse(prediction > 0.5, 1, 0)
+
+predicted_classes <- as.factor(predicted_classes)
+
+table(titanic$Survived, predicted_classes)
+```
+
+In this case our model correct guessed 356 people not surviving and 207 people as surviving.  It incorrectly guessed at 83 would die that actually survived and 68 as surviving who actually died.  If we take the correct over total we get the following:
+
+```{r}
+(356 + 207)/(356 + 207 + 83 + 68)
+```
+
+So we can correctly predict 78.8%.  This is a good improvement than if we just guessed everyone drowned (the model category).  
+
+```{r}
+table(titanic$Survived)
+
+549/(549 + 342)
+```
+
+
+## Final Words
+
+This introduction ignored the assumptions that underly logit models.  We also ignored probit models.  For a better understanding of how these models work, I recommend "Regression Models for Categorical and Limited Dpeendent Variables" by J. Scott Long
+
+<!--chapter:end:03-logit.Rmd-->
+
+# Ordered Logit Models
+
+## Data and Packages
+
+```{r}
+library(tidyverse)
+library(modelr)
+library(haven)
+library(broom)
+
+satisfaction <- read_dta("http://j.mp/SINGHejpr")
+```
+
+
+In this dataset we want to model each respondent's level of satisfaction with democracy.  This variable can be a 1, 2, 3, 4.  We can say they are ordered, but we don't know the distance.  4 is Very satisfied.  Because they are ordered, we should run an ordered logit/probit.
+
+## Running the Model
+
+We will likely want to use the polr (proportional odds logistic regression) command from the MASS package.  
+
+```{r}
+library(MASS)
+library(effects)
+
+satisfaction$satisfaction <- ordered(as.factor(satisfaction$satisfaction))
+
+ideology_satis <- polr(satisfaction ~ voted_ideo*winner + abstained +
+                         educ + efficacy + majoritarian_prez + freedom + gdppercapPPP +
+                         gdpgrowth + CPI + prez,
+                       method = "logistic", data = satisfaction)
+summary(ideology_satis)
+
+
+```
+
+Note that the polr command requires that our outcome variable is ordered numerically.  Also notice the interaction term.  While the output shows t-values, they are actually z values since maximum likelihood methods typically call for z ratios.  Lastly, note the different intercept cutpoints.  These are generally not of interest to us, but are useful when it comes to making predictions.
+
+
+If we wanted to get the p-value of a specific variable (voted_ideo:winner for instance) then we could run the following code with the z ratio.
+```{r}
+1 - pnorm(5.0957)
+```
+
+We can conclude with 99.9% confidence that the coefficient on the interaction term is greater than zero.
+
+
+A nice teature of using the logit link function is that the results can be inerpreted in terms of odd ratios, though they have to be computed differently for ordinal models compared to logit models. FOr logit models, we must exponentiate the negative value of a coefficient and interpret the odds of being in lower groups relative to higher groups.  For example: the odds ratio for our coefficients from the model above can be produced by the following code:
+
+
+```{r}
+100*(exp(-ideology_satis$coefficients)-1)
+```
+
+
+If, for instance, we wanted to interpret the influence of efficiency, then we could say that for a one point incrase on a five point efficacy scale, the odds a respondent will report that they are "not at all satisfied" with democracy relative to any of the three categories decrease by 15%, all else equal.  Also, the odds that a respondent will report "not at all satisfied" or "not very satisfied" relative to the two higher categories also decrease by 15%, all else equal.  In general then, we can interpret the oddds ratio for an ordered logit as shaping the odds of all optiosn below a threshold relative to all options above a threshold.  
+
+
+## Gettin predictions:
+
+Here I am doing the discrete class predicted, not the predicted probabilities.  If you want to see predicted probabilities, see the section of `Graphing the Tidy Way`.
+
+Somewhat uninteresting is that all of them are expected to be in the 3rd category.
+```{r}
+new_data <- satisfaction %>%
+  data_grid(efficacy, .model = ideology_satis)
+  
+
+new_data <- new_data %>%
+  mutate(pred_class = predict(ideology_satis, new_data, type = "class"))
+
+new_data
+```
+
+
+
+
+## Showing predictions
+```{r}
+Effect(focal.predictors = c("voted_ideo", "winner"), ideology_satis)
+
+
+plot(Effect(focal.predictors = c("voted_ideo", "winner"), ideology_satis))
+```
+
+
+```{r}
+plot(Effect(focal.predictors = "efficacy", ideology_satis))
+```
+
+
+## Graphing in a Tidy Way
+
+I am not sure if I have greally graphed this correctly, but this is what I could come up with.
+```{r}
+pred <- predict(ideology_satis, type = "probs")
+
+
+prediction <- cbind(satisfaction, pred)
+
+
+prediction %>%
+  rename("one" = 22,
+         "two" = 23,
+         "three" = 24,
+         "four" = 25) %>%
+  dplyr::select(efficacy, one, two, three, four) %>%
+  gather(outcome, prediction, -efficacy) %>%
+  mutate(outcome = factor(outcome, levels = c("one", "two", "three", "four"))) %>%
+  ggplot(aes(x = prediction, fill = as.factor(efficacy))) +
+  geom_histogram() +
+  facet_wrap(efficacy~outcome, ncol = 4) +
+  labs(fill = "Efficacy Levels")
+```
+
+
+<!--chapter:end:04-ordered-logit.Rmd-->
+
+# Multi Level Models
+
+## Introduction
+
+```{r}
+library(lme4)
+library(foreign)
+library(broom)
+library(tidyverse)
+```
+
+
+
+*Fixed-effect* parameters only use data for a specific group.  In contrast, *random-effect* parameters assume data share a common distribution.  FOr situations with small amounts of data or ourliers, random effect models can produce different estimates.
+
+
+
+
+```{r}
+
+evolution<-read.dta("http://j.mp/BPchap7")
+evolution$female[evolution$female==9]<-NA
+evolution<-subset(evolution,!is.na(female))
+```
+
+### full model
+```{r}
+hours_ml<-lmer(hrs_allev ~ phase1 + senior_c + ph_senior + notest_p + ph_notest_p + female + biocred3 + 
+                 degr3 + evol_course + certified + idsci_trans + confident + (1|st_fip), data = evolution)
+```
+
+
+
+
+### building the model
+
+Here we are building a random effects with no fixed effects:
+```{r}
+initial <- lmer(hrs_allev ~ (1 | st_fip), data = evolution)
+
+summary(initial)
+```
+
+```{r}
+plot(initial)
+```
+
+
+Now let's build one with a fixed-effect slope parameter:
+
+```{r}
+fixed <- lmer(hrs_allev ~ phase1 + (1 | st_fip), data = evolution)
+
+summary(fixed)
+```
+
+
+Now to add a random slope:
+```{r}
+random_slopes <- lmer(hrs_allev ~ phase1 + (notest_p | st_fip), data = evolution)
+
+broom::tidy(random_slopes)
+```
+
+
+If we wanted to assume uncorrelated random-effect slopes (it is actually easier to calculate) all we have to do is turn `|` into `||` (though you likely want a reason to do this, I am just doing here for instruction)
+
+```{r}
+uncor <- lmer(hrs_allev ~ phase1 + (notest_p || st_fip), data = evolution)
+
+summary(uncor)
+```
+
+
+You can also have a variable as a fixed effect while correcting for random slopes:
+
+
+```{r}
+# fixed_random <- lmer(hrs_allev ~ phase1 + (phase1 || st_fip), data = evolution)
+# 
+# summary(fixed_random)
+```
+
+### Understanding and reporting the outputs
+
+Point estimates
+
+```{r}
+# fixef(fixed_random)
+```
+
+
+```{r}
+# ranef(fixed_random)
+```
+
+We can also get confidence interals for the fixed effects using confint()
+
+```{r}
+# confint(fixed_random)
+```
+
+
+
+Using the broom.mixed package, you can use the `tidy()` function to extract model results, though this isn't as tidy as most models are:
+
+```{r}
+library(broom)
+
+# tidy(fixed_random, conf.int = TRUE)
+```
+
+
+### Communicating results
+
+This is not very easy to extract lmer results (see [link](https://github.com/tidymodels/broom/issues/96)).  
+
+```{r}
+# # Extract out the parameter estimates and confidence intervals and manipulate the data
+# dataPlot <- data.frame(cbind( fixef(fixed_random), confint(fixed_random)[ 4:5, ])) # getting the rows for confint
+# rownames(dataPlot)[1] <- "Intercept"
+# colnames(dataPlot) <- c("est", "L95", "U95")
+# dataPlot$parameter <- rownames(dataPlot)
+# 
+# # Print the new dataframe
+# print(dataPlot)
+# 
+# # Plot the results using ggplot2
+# ggplot(dataPlot, aes(x = parameter, y = est, ymin = L95, ymax = U95)) +
+#   geom_hline( yintercept = 0, color = 'red' ) +
+#   geom_linerange() + 
+#   geom_point() + 
+#   coord_flip() + 
+#   theme_minimal()
+```
+
+
+It is important that in many instances, rescaling might have to occur to make the model numerically viable (for instance, changing the year in our study to be 0 instead of the actual year).
+
+
+### Model comparison with Anova
+
+What happens if we include more variables or model it differently?  Well we can use anove to determine which model is better:
+```{r}
+# anova(random_slopes, fixed_random)
+```
+In this instance the fixed_random does a better job, but is not significantly better.
+
+
+## GLMs
+
+### Binomial Data
+
+code: glmer(y ~ x + (1  | group), family = 'error term')
+
+
+Here we are using the Bang dataset which is a survey of contraception use for women in Bangladesh.  The variables we are using for the model is whether they used the contraception (`user`), then the number of living children they had (`living.children`), the age centered around the mean (`age_mean`), and whether they lived in an urban or rural area (`urban`).  The random intercept in this case is the `district` where they reside.
+```{r}
+library(epiDisplay)
+
+data(Bang)
+
+cont_model <- glmer(user ~ living.children + age_mean + urban + (1 | district),
+                    family = "binomial",
+                    data = Bang)
+```
+
+
+Now let's look at the results
+```{r}
+summary(cont_model)
+
+```
+
+Everything is significant, and pretty much what we would expect.  The more kids, the more likely you are to use it,  The older you are, the less likely you are.  And women in urban areas use them more.  The coefficients however, are difficult to read becasue they are in log-dds.  We can change this to odds ratios by taking the exponent.  Here is a short explanation of odds-ratios:
+
+- If an odds-ratio is 1.0, then both events have an equal chance of occurring. For example, if the odds-ratio for a urban was 1.0, then living in an urban/rural area would have no influence on contraception use.
+- If an odds-ratio is less than 1, then living in an urban area would decrease the chance of using contraception. For example, an odds-ratio of 0.5 would mean a those living in urban areas have odds of 1:2 or 1 woman using contraception for every 2 women in rural areas.
+- If an odds-ratio is greater than 1, then living in an urban area would increase the chance of contraception use. For example, an odds-ratio of 3.0 would mean living in an urban area has odds of 3:1 or 3 women using contraception in an urban area compared to those in rural areas.
+
+
+```{r}
+# calculating odds ratios and the confidence intervals for them
+exp(fixef(cont_model))
+exp(confint(cont_model))
+```
+
+
+
+### Count models
+
+pretty simple change in formula: `glmer(y ~ x + (1 | group), family = 'poisson')`
+
+Here we are using data about chlamydia given by the state of illinois. We basically want to see if things are getting better over time, and whether age groups have this problem at different rates.
+
+```{r}
+chlamydia <- read_csv("https://assets.datacamp.com/production/repositories/1803/datasets/612bd6490500636efa74132bfbc37817f250cb5a/ILdata.csv")
+```
+
+
+```{r}
+count_chlamydia <- glmer(count ~ age + year + (year | county), family = "poisson",
+                         data = chlamydia)
+summary(count_chlamydia)
+
+```
+
+So there is a difference by age group for 2 categories.  Now let's show them in a good format:
+
+```{r}
+fixef(count_chlamydia)
+ranef(count_chlamydia)
+```
+
+We can plot this in a similar fashion using ggplot, though it won't be exactly the same as the `glmer()` outputs: (UGLY)
+```{r}
+# fits 4 graphs with I believe 47 lines for the actual data and 47 predicted
+ggplot(chlamydia, aes(x = year, y = count, group = county)) +
+  geom_line() +
+  facet_grid(age ~ .) +
+  stat_smooth(method = "glm", method.args = list(
+    family = "poisson"), se = FALSE, alpha = 0.5) +
+  theme_minimal()
+```
+
+I think this still works, but gives a few number of counties:
+```{r}
+chlamydia %>%
+  filter(county == sample(county, 10)) %>%
+  ggplot(aes(x = year, y = count, group = county)) +
+  geom_line() +
+  facet_grid(age ~ .) +
+  stat_smooth(method = "glm", method.args = list(
+    family = "poisson"), se = FALSE, alpha = 0.5) +
+  theme_minimal()
+```
+
+
+## Repeated Measures
+
+They are a special case of mixed-effects models.  Following individuals through time.  We may do a paired, t-test.  You can also do a repeated measures ANOVA from more than just 2 tests (it could be test scores for every year of score).
+
+There is no default measure for running a repeated measure ANOVA by doing:
+
+`library(lmertest)`
+`anova(lmer(y ~ time + (1|individual)))`
+
+
+This can also do this for lmer nad glmer.  Need to add a time variable and a group variable.
+
+
+### Paired T-test
+
+
+We are going to show this with randomly simulated data of 10 observations.
+```{r}
+# Set the seed to be 345659
+set.seed(345659)
+
+
+# simulate before with mean of 0 and sd of 0.5
+before <- rnorm(10, mean = 0, sd = 0.5)
+# simulate after with mean effect of 4.5 and standard devation of 5
+after  <- before + rnorm(10, mean = 4.5, sd = 5)
+
+# Run a standard, non-paired t-test
+t.test(x = before, y =after, paired = FALSE)
+
+# Run a standard, paired t-test
+t.test(x = before, y =after, paired = TRUE)
+```
+
+In this case, both the paired and the unpaired versions were significant, but the paired one showed a larger difference (more powerful).  
+
+
+
+### Repeated Measures ANOVA
+
+here we are going to use this process but for repeated (more than 2) measures using ANOVA.  First, though, we have to create a data frame using the variables from the last section.
+```{r}
+# Create the data.frame, using the variables from the previous exercise. 
+# y is the joined vectors before and after.
+# trial is the repeated names before and after, each one repeated n_ind
+# ind is the letter of the individual, repeated 2 times (because there were two observations)
+dat <- data.frame(y = c(before, after), 
+                  trial = rep(c("before", "after"), each = 10),
+                  ind = rep(letters[1:10], times = 2))
+```
+
+
+```{r}
+library(lmerTest)
+
+# Run a standard, paired t-test
+t.test(before, after, paired = TRUE)
+
+# Run a lmer and save it as lmer_out
+lmer_out <- lmer(y ~ trial + (1| ind), data = dat)
+
+# Look at the summary() of lmer_out
+summary(lmer_out)
+```
+
+In this case, the intercept is the same for the lmer and the t.test!  So the lmer is basically an extension fo the paired t.test.
+
+
+### Example: NY Hate Crime Data
+
+
+```{r}
+hate <- read_csv("https://assets.datacamp.com/production/repositories/1803/datasets/45e88fe1bc8d1d76d140e69cb873da9eddb7008e/hateNY.csv")
+
+hate
+```
+
+Give the different population sizes of New York counties, you can reasonably assume the need for random-effect intercepts a priori. However, do you need random-effect slopes? Plot the data to see if trends appear to vary by county. Additionally, plotting the data will help you see what is going on.
+
+
+```{r}
+ggplot(hate, aes(x = Year, y = TotalIncidents, group = County)) +
+  geom_line() +
+  geom_smooth(method = "glm", method.args = c("poisson"), se = FALSE)
+```
+
+From the graph above, it looks like we need both random intercepts and random slopes.
+
+Now let's build a simple `glm` model and then we cna move onto `glmer`.  
+
+```{r}
+ny_hate_mod1 <- glm(TotalIncidents ~ Year + County, data = hate, family = "poisson")
+
+summary(ny_hate_mod1)
+```
+
+Now that our model ran without any problems, let's build a `glmer()`:
+
+```{r}
+ny_hate_mod2 <- glmer(TotalIncidents ~ Year + (Year | County), data = hate, family = "poisson")
+
+summary(ny_hate_mod2)
+```
+
+We got a wnrning about having a problem and needing to rescale, we can do this by using the Year2 variable instead of the Year variable (rescaling can help a lot with this)
+
+```{r}
+ny_hate_mod3 <- glmer(TotalIncidents ~ Year2 + (Year2 | County), data = hate, family = "poisson")
+
+summary(ny_hate_mod3)
+```
+
+
+Now let's visualize the results:
+
+
+During this exercise, we'll extract out the county-level estimates and plot them with ggplot2. The county-level random-effect slopes need to be added to the fixed-effect slopes to get the slope estimates for each county.
+
+In addition to this addition, the code includes ordering the counties by rate of crime (the slope estimates) to help visualize the data clearly.
+```{r}
+# Extract out the fixed-effect slope for Year2
+Year2_slope <- fixef(ny_hate_mod3)['Year2']
+
+# Extract out the random-effect slopes for county
+county_slope <- ranef(ny_hate_mod3)$County
+
+# Create a new column for the slope
+county_slope$slope <- county_slope$Year2 + Year2_slope
+
+# Use the row names to create a county name column
+county_slope$county <- rownames(county_slope)
+
+# Create an ordered county-level factor based upon slope values
+county_slope$county_plot <- factor(county_slope$county, 
+                                   levels = county_slope$county[order(county_slope$slope)])
+
+# Now plot the results using ggplot2
+ggplot(data = county_slope, aes(x = county_plot, y = slope)) + 
+	geom_point() +
+    coord_flip() + 
+	theme_bw() + 
+	ylab("Change in hate crimes per year")  +
+	xlab("County")
+```
+
+Note how the change in hate crimes varies greatly across countries!
+
+
+
+<!--chapter:end:05-multi-level-modeling.Rmd-->
+
+# Count Data
+
+A Poisson distribution is different than a normal distribution in that it only has discrete integers (positive and whole numbers).  A Poisson distribution also have the assumption of equi-dispersion meaning that the mean and variance parameter are the same (somethign commonly broken leading to us using a negative binomial distribution).
+
+
+To run a poisson regression in R you need:
+
+- Discrete counts
+- Defined area and time
+
+As a reminder, our coefficients are on a log-scale.  The formula is a pretty simple variation of the `glm()` framework:
+
+`glm(y ~ x, data = dat, family = 'poisson')`
+
+
+When you shouldn't use poisson distrubtion:
+
+- Non-count or non-positive data (e.g. 1.4 or -2)
+- Non-constant sample area or time 
+- Mean > 30 (can probably use a normal distrubition)
+- Over-dispersed data
+- Zero-inflated data
+
+# let's fit the first one:
+
+This dataset is coming from Louisville data on civilian fire victim data.  First we will run a linear model then compare it with the count data. 
+
+This data is appropriate for count models because it is a whole number (people) and can't ever be negative.
+
+```{r}
+library(tidyverse)
+library(broom)
+
+fire <- read_csv("Data/count_fire_data.csv") %>%
+  mutate(month = as.factor(month))
+```
+
+
+```{r}
+linear <- lm(victims ~ month, data = fire)
+count <- glm(victims ~ month, data = fire, family = "poisson")
+```
+
+```{r}
+summary(linear)
+```
+
+```{r}
+summary(count)
+```
+
+Note how the count model is better able to determine which months were significant.
+
+<!--chapter:end:06-count-models.Rmd-->
+

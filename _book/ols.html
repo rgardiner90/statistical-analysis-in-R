@@ -1,0 +1,724 @@
+<!DOCTYPE html>
+<html >
+
+<head>
+
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <title>Chapter 3 OLS | Legal Education Analysis in R</title>
+  <meta name="description" content="This is a minimal example of using the bookdown package to write a book. The output format for this example is bookdown::gitbook.">
+  <meta name="generator" content="bookdown  and GitBook 2.6.7">
+
+  <meta property="og:title" content="Chapter 3 OLS | Legal Education Analysis in R" />
+  <meta property="og:type" content="book" />
+  
+  
+  <meta property="og:description" content="This is a minimal example of using the bookdown package to write a book. The output format for this example is bookdown::gitbook." />
+  
+
+  <meta name="twitter:card" content="summary" />
+  <meta name="twitter:title" content="Chapter 3 OLS | Legal Education Analysis in R" />
+  
+  <meta name="twitter:description" content="This is a minimal example of using the bookdown package to write a book. The output format for this example is bookdown::gitbook." />
+  
+
+<meta name="author" content="Richard G. Gardiner">
+
+
+<meta name="date" content="2019-05-15">
+
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  
+  
+<link rel="prev" href="intro.html">
+<link rel="next" href="logit-models.html">
+<script src="libs/jquery-2.2.3/jquery.min.js"></script>
+<link href="libs/gitbook-2.6.7/css/style.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-table.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-bookdown.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-highlight.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-search.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-fontsettings.css" rel="stylesheet" />
+
+
+
+
+
+
+
+
+
+<style type="text/css">
+div.sourceCode { overflow-x: auto; }
+table.sourceCode, tr.sourceCode, td.lineNumbers, td.sourceCode {
+  margin: 0; padding: 0; vertical-align: baseline; border: none; }
+table.sourceCode { width: 100%; line-height: 100%; }
+td.lineNumbers { text-align: right; padding-right: 4px; padding-left: 4px; color: #aaaaaa; border-right: 1px solid #aaaaaa; }
+td.sourceCode { padding-left: 5px; }
+code > span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code > span.dt { color: #902000; } /* DataType */
+code > span.dv { color: #40a070; } /* DecVal */
+code > span.bn { color: #40a070; } /* BaseN */
+code > span.fl { color: #40a070; } /* Float */
+code > span.ch { color: #4070a0; } /* Char */
+code > span.st { color: #4070a0; } /* String */
+code > span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code > span.ot { color: #007020; } /* Other */
+code > span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code > span.fu { color: #06287e; } /* Function */
+code > span.er { color: #ff0000; font-weight: bold; } /* Error */
+code > span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+code > span.cn { color: #880000; } /* Constant */
+code > span.sc { color: #4070a0; } /* SpecialChar */
+code > span.vs { color: #4070a0; } /* VerbatimString */
+code > span.ss { color: #bb6688; } /* SpecialString */
+code > span.im { } /* Import */
+code > span.va { color: #19177c; } /* Variable */
+code > span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code > span.op { color: #666666; } /* Operator */
+code > span.bu { } /* BuiltIn */
+code > span.ex { } /* Extension */
+code > span.pp { color: #bc7a00; } /* Preprocessor */
+code > span.at { color: #7d9029; } /* Attribute */
+code > span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code > span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code > span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+</style>
+
+<link rel="stylesheet" href="style.css" type="text/css" />
+</head>
+
+<body>
+
+
+
+  <div class="book without-animation with-summary font-size-2 font-family-1" data-basepath=".">
+
+    <div class="book-summary">
+      <nav role="navigation">
+
+<ul class="summary">
+<li><a href="./">A Minimal Book Example</a></li>
+
+<li class="divider"></li>
+<li class="chapter" data-level="1" data-path="index.html"><a href="index.html"><i class="fa fa-check"></i><b>1</b> About the Book</a></li>
+<li class="chapter" data-level="2" data-path="intro.html"><a href="intro.html"><i class="fa fa-check"></i><b>2</b> Introduction</a></li>
+<li class="chapter" data-level="3" data-path="ols.html"><a href="ols.html"><i class="fa fa-check"></i><b>3</b> OLS</a><ul>
+<li class="chapter" data-level="3.1" data-path="ols.html"><a href="ols.html#intuition"><i class="fa fa-check"></i><b>3.1</b> Intuition</a></li>
+<li class="chapter" data-level="3.2" data-path="ols.html"><a href="ols.html#running-your-first-regression"><i class="fa fa-check"></i><b>3.2</b> Running your first regression</a></li>
+<li class="chapter" data-level="3.3" data-path="ols.html"><a href="ols.html#advancing-to-multiple-regression"><i class="fa fa-check"></i><b>3.3</b> Advancing to Multiple Regression</a></li>
+<li class="chapter" data-level="3.4" data-path="ols.html"><a href="ols.html#checking-assumptions"><i class="fa fa-check"></i><b>3.4</b> Checking Assumptions</a><ul>
+<li class="chapter" data-level="3.4.1" data-path="ols.html"><a href="ols.html#normality"><i class="fa fa-check"></i><b>3.4.1</b> Normality</a></li>
+<li class="chapter" data-level="3.4.2" data-path="ols.html"><a href="ols.html#heteroskedasticity"><i class="fa fa-check"></i><b>3.4.2</b> Heteroskedasticity</a></li>
+<li class="chapter" data-level="3.4.3" data-path="ols.html"><a href="ols.html#multicollinearity"><i class="fa fa-check"></i><b>3.4.3</b> Multicollinearity</a></li>
+<li class="chapter" data-level="3.4.4" data-path="ols.html"><a href="ols.html#outliers-and-leverage"><i class="fa fa-check"></i><b>3.4.4</b> Outliers and leverage</a></li>
+<li class="chapter" data-level="3.4.5" data-path="ols.html"><a href="ols.html#autocorrelation"><i class="fa fa-check"></i><b>3.4.5</b> Autocorrelation</a></li>
+<li class="chapter" data-level="3.4.6" data-path="ols.html"><a href="ols.html#residual-analysis"><i class="fa fa-check"></i><b>3.4.6</b> Residual Analysis</a></li>
+</ul></li>
+<li class="chapter" data-level="3.5" data-path="ols.html"><a href="ols.html#displaying-results"><i class="fa fa-check"></i><b>3.5</b> Displaying Results</a><ul>
+<li class="chapter" data-level="3.5.1" data-path="ols.html"><a href="ols.html#tables"><i class="fa fa-check"></i><b>3.5.1</b> Tables</a></li>
+<li class="chapter" data-level="3.5.2" data-path="ols.html"><a href="ols.html#coefplots"><i class="fa fa-check"></i><b>3.5.2</b> Coefplots</a></li>
+<li class="chapter" data-level="3.5.3" data-path="ols.html"><a href="ols.html#graphing-predictions"><i class="fa fa-check"></i><b>3.5.3</b> Graphing predictions</a></li>
+</ul></li>
+</ul></li>
+<li class="chapter" data-level="4" data-path="logit-models.html"><a href="logit-models.html"><i class="fa fa-check"></i><b>4</b> Logit Models</a><ul>
+<li class="chapter" data-level="4.1" data-path="logit-models.html"><a href="logit-models.html#introducing-logit-models"><i class="fa fa-check"></i><b>4.1</b> Introducing Logit Models</a></li>
+<li class="chapter" data-level="4.2" data-path="logit-models.html"><a href="logit-models.html#example-of-logit-model"><i class="fa fa-check"></i><b>4.2</b> Example of Logit Model</a></li>
+<li class="chapter" data-level="4.3" data-path="logit-models.html"><a href="logit-models.html#adding-predictions"><i class="fa fa-check"></i><b>4.3</b> Adding Predictions</a></li>
+<li class="chapter" data-level="4.4" data-path="logit-models.html"><a href="logit-models.html#how-did-our-model-do"><i class="fa fa-check"></i><b>4.4</b> How did our model do?</a></li>
+<li class="chapter" data-level="4.5" data-path="logit-models.html"><a href="logit-models.html#final-words"><i class="fa fa-check"></i><b>4.5</b> Final Words</a></li>
+</ul></li>
+<li class="chapter" data-level="5" data-path="ordered-logit-models.html"><a href="ordered-logit-models.html"><i class="fa fa-check"></i><b>5</b> Ordered Logit Models</a><ul>
+<li class="chapter" data-level="5.1" data-path="ordered-logit-models.html"><a href="ordered-logit-models.html#data-and-packages"><i class="fa fa-check"></i><b>5.1</b> Data and Packages</a></li>
+<li class="chapter" data-level="5.2" data-path="ordered-logit-models.html"><a href="ordered-logit-models.html#running-the-model"><i class="fa fa-check"></i><b>5.2</b> Running the Model</a></li>
+<li class="chapter" data-level="5.3" data-path="ordered-logit-models.html"><a href="ordered-logit-models.html#gettin-predictions"><i class="fa fa-check"></i><b>5.3</b> Gettin predictions:</a></li>
+<li class="chapter" data-level="5.4" data-path="ordered-logit-models.html"><a href="ordered-logit-models.html#showing-predictions"><i class="fa fa-check"></i><b>5.4</b> Showing predictions</a></li>
+<li class="chapter" data-level="5.5" data-path="ordered-logit-models.html"><a href="ordered-logit-models.html#graphing-in-a-tidy-way"><i class="fa fa-check"></i><b>5.5</b> Graphing in a Tidy Way</a></li>
+</ul></li>
+<li class="chapter" data-level="6" data-path="multi-level-models.html"><a href="multi-level-models.html"><i class="fa fa-check"></i><b>6</b> Multi Level Models</a><ul>
+<li class="chapter" data-level="6.1" data-path="multi-level-models.html"><a href="multi-level-models.html#introduction"><i class="fa fa-check"></i><b>6.1</b> Introduction</a><ul>
+<li class="chapter" data-level="6.1.1" data-path="multi-level-models.html"><a href="multi-level-models.html#full-model"><i class="fa fa-check"></i><b>6.1.1</b> full model</a></li>
+<li class="chapter" data-level="6.1.2" data-path="multi-level-models.html"><a href="multi-level-models.html#building-the-model"><i class="fa fa-check"></i><b>6.1.2</b> building the model</a></li>
+<li class="chapter" data-level="6.1.3" data-path="multi-level-models.html"><a href="multi-level-models.html#understanding-and-reporting-the-outputs"><i class="fa fa-check"></i><b>6.1.3</b> Understanding and reporting the outputs</a></li>
+<li class="chapter" data-level="6.1.4" data-path="multi-level-models.html"><a href="multi-level-models.html#communicating-results"><i class="fa fa-check"></i><b>6.1.4</b> Communicating results</a></li>
+<li class="chapter" data-level="6.1.5" data-path="multi-level-models.html"><a href="multi-level-models.html#model-comparison-with-anova"><i class="fa fa-check"></i><b>6.1.5</b> Model comparison with Anova</a></li>
+</ul></li>
+<li class="chapter" data-level="6.2" data-path="multi-level-models.html"><a href="multi-level-models.html#glms"><i class="fa fa-check"></i><b>6.2</b> GLMs</a><ul>
+<li class="chapter" data-level="6.2.1" data-path="multi-level-models.html"><a href="multi-level-models.html#binomial-data"><i class="fa fa-check"></i><b>6.2.1</b> Binomial Data</a></li>
+<li class="chapter" data-level="6.2.2" data-path="multi-level-models.html"><a href="multi-level-models.html#count-models"><i class="fa fa-check"></i><b>6.2.2</b> Count models</a></li>
+</ul></li>
+<li class="chapter" data-level="6.3" data-path="multi-level-models.html"><a href="multi-level-models.html#repeated-measures"><i class="fa fa-check"></i><b>6.3</b> Repeated Measures</a><ul>
+<li class="chapter" data-level="6.3.1" data-path="multi-level-models.html"><a href="multi-level-models.html#paired-t-test"><i class="fa fa-check"></i><b>6.3.1</b> Paired T-test</a></li>
+<li class="chapter" data-level="6.3.2" data-path="multi-level-models.html"><a href="multi-level-models.html#repeated-measures-anova"><i class="fa fa-check"></i><b>6.3.2</b> Repeated Measures ANOVA</a></li>
+<li class="chapter" data-level="6.3.3" data-path="multi-level-models.html"><a href="multi-level-models.html#example-ny-hate-crime-data"><i class="fa fa-check"></i><b>6.3.3</b> Example: NY Hate Crime Data</a></li>
+</ul></li>
+</ul></li>
+<li class="chapter" data-level="7" data-path="count-data.html"><a href="count-data.html"><i class="fa fa-check"></i><b>7</b> Count Data</a></li>
+<li class="chapter" data-level="8" data-path="lets-fit-the-first-one.html"><a href="lets-fit-the-first-one.html"><i class="fa fa-check"></i><b>8</b> let’s fit the first one:</a></li>
+<li class="divider"></li>
+<li><a href="https://github.com/rstudio/bookdown" target="blank">Published with bookdown</a></li>
+
+</ul>
+
+      </nav>
+    </div>
+
+    <div class="book-body">
+      <div class="body-inner">
+        <div class="book-header" role="navigation">
+          <h1>
+            <i class="fa fa-circle-o-notch fa-spin"></i><a href="./">Legal Education Analysis in R</a>
+          </h1>
+        </div>
+
+        <div class="page-wrapper" tabindex="-1" role="main">
+          <div class="page-inner">
+
+            <section class="normal" id="section-">
+<div id="ols" class="section level1">
+<h1><span class="header-section-number">Chapter 3</span> OLS</h1>
+<p>OLS regression is the backbone of statistics (though not actually used that often because of the restrictions that come with it). The basic goal of OLS regression is to understand the relationship between one more more independent variables and some dependent variable. OLS regression is said to be <em>BLUE</em> under certain circumastances:</p>
+<ul>
+<li>B: best</li>
+<li>L: linear</li>
+<li>U: unbiased</li>
+<li>E: estimator</li>
+</ul>
+<p>Under assumptions that will be discussed later, OLS regression will be unbiased (errors are evenly distributed) and the one with the smallest errors. It is also the best model to use under these assumptions. OLS regression is also very easy to interpret. For all of these reasons (and more), it is one of the first statistical methods taught in graduate methods sections. These do assume, however, that you understand t statistics, standard errors, and the basics of hypothesis testing.</p>
+<div id="intuition" class="section level2">
+<h2><span class="header-section-number">3.1</span> Intuition</h2>
+<p>Keeping it simple, a bivariate regression looks for the relationship between two variables (sometimes referrred to as vectors). Visually you can see it in the graph below (gapminder library was already loaded).</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">gapminder <span class="op">%&gt;%</span>
+<span class="st">  </span><span class="kw">ggplot</span>(<span class="kw">aes</span>(<span class="dt">x =</span> gdpPercap, <span class="dt">y =</span> lifeExp)) <span class="op">+</span>
+<span class="st">  </span><span class="kw">geom_point</span>() <span class="op">+</span>
+<span class="st">  </span><span class="kw">scale_x_log10</span>(<span class="dt">labels =</span> scales<span class="op">::</span><span class="kw">comma_format</span>()) <span class="op">+</span>
+<span class="st">  </span><span class="kw">labs</span>(<span class="dt">x =</span> <span class="st">&quot;Logged GDP/capita&quot;</span>, <span class="dt">y =</span> <span class="st">&quot;Life Expectancy&quot;</span>)</code></pre></div>
+<p><img src="Bookdown_files/figure-html/unnamed-chunk-2-1.png" width="672" /></p>
+<p>You can see a general positive trend between the logged GDP per Capita and Life expectancy. To see this as a hypothesis, you would say that “countries with higher GPD per capita have a higher life expectancy” or “as a country gets richer, the life expectancy increases.”</p>
+<p>In the code below, the red line would be considered our hypothesis.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">gapminder <span class="op">%&gt;%</span>
+<span class="st">  </span><span class="kw">ggplot</span>(<span class="kw">aes</span>(<span class="dt">x =</span> gdpPercap, <span class="dt">y =</span> lifeExp)) <span class="op">+</span>
+<span class="st">  </span><span class="kw">geom_point</span>() <span class="op">+</span>
+<span class="st">  </span><span class="kw">scale_x_log10</span>(<span class="dt">labels =</span> scales<span class="op">::</span><span class="kw">comma_format</span>()) <span class="op">+</span>
+<span class="st">  </span><span class="kw">geom_abline</span>(<span class="dt">intercept =</span> <span class="op">-</span><span class="dv">10</span>, <span class="dt">slope =</span> <span class="dv">20</span>, <span class="dt">color =</span> <span class="st">&quot;red&quot;</span>, <span class="dt">lty =</span> <span class="dv">2</span>, <span class="dt">size =</span> <span class="dv">2</span>) <span class="op">+</span>
+<span class="st">  </span><span class="kw">labs</span>(<span class="dt">x =</span> <span class="st">&quot;Logged GDP/capita&quot;</span>, <span class="dt">y =</span> <span class="st">&quot;Life Expectancy&quot;</span>)</code></pre></div>
+<p><img src="Bookdown_files/figure-html/unnamed-chunk-3-1.png" width="672" /></p>
+</div>
+<div id="running-your-first-regression" class="section level2">
+<h2><span class="header-section-number">3.2</span> Running your first regression</h2>
+<p>Our argument about the connection between logged GDP per captia and life expectancy can be shown in three slightly different ways:</p>
+<ol style="list-style-type: decimal">
+<li>Hypothesis: Countries with higher GPD per capita has a higher life expectancy</li>
+<li>Mathematical: <span class="math inline">\(LifeExp_i = \alpha + \beta (Logged GDP/Capita_i) + \epsilon_i\)</span></li>
+<li>R code: <code>model1 &lt;- lm(lifeExp ~ log10(gdpPercap), data = gapminder)</code></li>
+</ol>
+<p>The generalizable mathematical formula is actually <span class="math inline">\(Y_i = \alpha + \beta X_i + \epsilon_i\)</span>, but I find this to be confusing if introduced before the actual formula. For the R code, the <code>lm</code> stands for linear model. Within the parentheses you need to specify your dependent variable, DV, to the left of the tilde <code>~</code> and your independent variable, IV, to the right. Lastly, you need to specify the dataset where the variables are located, <code>data = gapminder</code> (technically you can use the <code>DATASET$VARIABLE</code> notation, but that gets impractical later). Generally, you do not need to worry about the <code>log10()</code>, but prior knowledge says that GDP generally requires a logarithmic transformation.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">model1 &lt;-<span class="st"> </span><span class="kw">lm</span>(lifeExp <span class="op">~</span><span class="st"> </span><span class="kw">log10</span>(gdpPercap), <span class="dt">data =</span> gapminder)</code></pre></div>
+<p>By calling <code>summary(model1)</code> we are able to see the influence of the logged GDP per capita on life expectancy. The first thing we see is the formula we used to create the model. Next we see some summary statistics about our residuals (distance between our regression line and the observation). Under the coefficients section we see our <code>intercept</code> and <code>log10(gdpPercap)</code>. The intercept is the location on the y-axis when our independent variable is equal to 0. In many instances, we have no interest in interpreting the intercept. For instance, our model says that when the logged GDP of a country is 0 (which is undefined because logarithm is only for values greater than 0), the life expectancy for that country is -9, another ridiculous number. Again, this is common.</p>
+<p>Our main interest is in our independent variable, the log of GPD per capita. We see that there is a positive relationship between the log of GPD per capita and life expectancy. Additionally, we see that the t statistic is rather large and the variable is significant at all standard social science levels. The last statistic I want to highlight is the <span class="math inline">\(R^2\)</span> which basically shows us how much of the variation in life expectancy is explained by the log of GDP per capita.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">summary</span>(model1)</code></pre></div>
+<pre><code>## 
+## Call:
+## lm(formula = lifeExp ~ log10(gdpPercap), data = gapminder)
+## 
+## Residuals:
+##     Min      1Q  Median      3Q     Max 
+## -32.778  -4.204   1.212   4.658  19.285 
+## 
+## Coefficients:
+##                  Estimate Std. Error t value Pr(&gt;|t|)    
+## (Intercept)       -9.1009     1.2277  -7.413 1.93e-13 ***
+## log10(gdpPercap)  19.3534     0.3425  56.500  &lt; 2e-16 ***
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+## Residual standard error: 7.62 on 1702 degrees of freedom
+## Multiple R-squared:  0.6522, Adjusted R-squared:  0.652 
+## F-statistic:  3192 on 1 and 1702 DF,  p-value: &lt; 2.2e-16</code></pre>
+<p>To get a table more common in articles or presentations, try using the <code>stargazer</code> table from the stargazer package. This table shows the same basic data as the summary with slight stylistic differences. We specified that we wanted the <code>type = &quot;text&quot;</code> because the default is <span class="math inline">\(\LaTeX\)</span> code. There are a lot of ways to customize a stargazer table, but the basics do most of what we need.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">stargazer</span>(model1, <span class="dt">type =</span> <span class="st">&quot;text&quot;</span>)</code></pre></div>
+<pre><code>## 
+## ===============================================
+##                         Dependent variable:    
+##                     ---------------------------
+##                               lifeExp          
+## -----------------------------------------------
+## log10(gdpPercap)             19.353***         
+##                               (0.343)          
+##                                                
+## Constant                     -9.101***         
+##                               (1.228)          
+##                                                
+## -----------------------------------------------
+## Observations                   1,704           
+## R2                             0.652           
+## Adjusted R2                    0.652           
+## Residual Std. Error      7.620 (df = 1702)     
+## F Statistic         3,192.273*** (df = 1; 1702)
+## ===============================================
+## Note:               *p&lt;0.1; **p&lt;0.05; ***p&lt;0.01</code></pre>
+<p>We can see the relationship in the following graph. The red line is the graphical manifistation of our model (pretty close to the original red line).</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">gapminder <span class="op">%&gt;%</span>
+<span class="st">  </span><span class="kw">ggplot</span>(<span class="kw">aes</span>(<span class="dt">x =</span> gdpPercap, <span class="dt">y =</span> lifeExp)) <span class="op">+</span>
+<span class="st">  </span><span class="kw">geom_point</span>() <span class="op">+</span>
+<span class="st">  </span><span class="kw">scale_x_log10</span>(<span class="dt">labels =</span> scales<span class="op">::</span><span class="kw">comma_format</span>()) <span class="op">+</span>
+<span class="st">  </span><span class="kw">geom_smooth</span>(<span class="dt">method =</span> <span class="st">&quot;lm&quot;</span>, <span class="dt">color =</span> <span class="st">&quot;red&quot;</span>) <span class="op">+</span>
+<span class="st">  </span><span class="kw">labs</span>(<span class="dt">x =</span> <span class="st">&quot;Logged GDP/capita&quot;</span>, <span class="dt">y =</span> <span class="st">&quot;Life Expectancy&quot;</span>)</code></pre></div>
+<p><img src="Bookdown_files/figure-html/unnamed-chunk-7-1.png" width="672" /></p>
+</div>
+<div id="advancing-to-multiple-regression" class="section level2">
+<h2><span class="header-section-number">3.3</span> Advancing to Multiple Regression</h2>
+<p>We see that there is a connection between the wealth of a country (<code>logged GPDPercap</code>) and <code>lifeExp</code>, but could this relationship be a function of the continent where someone resides? In bivariate regression you do not know about potentially confounding variables. Additionally, you may have more than just one hypothesis. Lots of research only specifies one relationship (a bi-variate relationship) when the real world is much more complicated. To get over this hurdle, we have introduce additional variables, thus changing from bivariate to multiple variable regression (sometimes referred to as multi-variate regression). The formula is very similar in R, but there are additional assumptions that need to be made (the next section). Here is the code for running a multiple regression:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">model2 &lt;-<span class="st"> </span><span class="kw">lm</span>(lifeExp <span class="op">~</span><span class="st"> </span><span class="kw">log10</span>(gdpPercap) <span class="op">+</span><span class="st"> </span>continent, <span class="dt">data =</span> gapminder)</code></pre></div>
+<p>The line of code is almost exactly the same (I actually just copied and pasted this from above), with the only addition is the inclusion of <code>+ continent</code>. That is it! Nothing too crazy to move beyond bivariate. But now you can make claims that you might have heard before, such as: “all else equal”, “holding everything constant”. But before we make claims, let’s check out the results.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">summary</span>(model2)</code></pre></div>
+<pre><code>## 
+## Call:
+## lm(formula = lifeExp ~ log10(gdpPercap) + continent, data = gapminder)
+## 
+## Residuals:
+##      Min       1Q   Median       3Q      Max 
+## -27.1163  -3.4739   0.4336   4.3519  18.5632 
+## 
+## Coefficients:
+##                   Estimate Std. Error t value Pr(&gt;|t|)    
+## (Intercept)         2.3170     1.3594   1.704   0.0885 .  
+## log10(gdpPercap)   14.7871     0.4225  35.003  &lt; 2e-16 ***
+## continentAmericas   7.0147     0.5544  12.652  &lt; 2e-16 ***
+## continentAsia       5.9117     0.4768  12.400  &lt; 2e-16 ***
+## continentEurope     9.5771     0.6041  15.855  &lt; 2e-16 ***
+## continentOceania    9.2135     1.5359   5.999 2.42e-09 ***
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+## Residual standard error: 7.038 on 1698 degrees of freedom
+## Multiple R-squared:  0.704,  Adjusted R-squared:  0.7031 
+## F-statistic: 807.6 on 5 and 1698 DF,  p-value: &lt; 2.2e-16</code></pre>
+<p>We see from the results that the <code>log10(gdpPercap)</code> is still significant and positive, though the slope is a little smaller. We also see the output for four continents: Americas, Asia, Europe, Oceania. It appears that the gapminder dataset combines North and South America (something I wouldn’t recommend if this were my own data). Whenever we have a categorical variable like this, one category must be left out as the “holdout” or “baseline” category. In this instance, Africa is the holdout category (you can do some magic if you want a different baseline category, but it is generally not that important). All statements that are based on the findings for each continent has to be done in relationship to Africa.</p>
+<p>How do you interpret the model? Let’s start with GDP/capita. The interpretation is almost completely the same, but with a slight addition. Our model predicts that for a log10 unit increase in GDP/capita (going from 1-dollar per capita to 10-dollars per capita), we expect the average life expectancy for a country to increase by 14.7 years, <strong>all else equal</strong>. This means that while considering the continent of that country (or yet another way: regardless of the continent), there is still a positive relationship between GDP/capita and life expectancy.</p>
+<p>Interpreting the other variables is pretty simple. Given that we are comparing to Africa, we would say that countries in the Americas are predicted to have a 7 year higher average life expectancy, regardless of the GDP per capita (you could again say all else equal). Countries in Asia also have a higher life expectancy compared to Africa.</p>
+<p>Now I would only make these statements if there is a statistically significant relationship (generally determined based off of a p-value). If we have made the determination that a variable is not statistically significant, than we are unable to confidently say the direction of the effect.</p>
+</div>
+<div id="checking-assumptions" class="section level2">
+<h2><span class="header-section-number">3.4</span> Checking Assumptions</h2>
+<p>Now we need to check for the different assumptions that go along with OLS regression. For those who want a quick introduction, this <a href="https://www.albert.io/blog/key-assumptions-of-ols-econometrics-review/">website</a> seemed to have a good introduction.</p>
+<div id="normality" class="section level3">
+<h3><span class="header-section-number">3.4.1</span> Normality</h3>
+<p>The first question is whether we have a normal distribution. The quantile-quantile (Q-Q) plot tests the assumption that our data really does come from a theoretically normal distribution (the code below requires the <code>car</code> package). You want the observations to fall along the blue line. In general, you will have some points off of the line. This is not a hard and fast rule. This assumption should be checked carefully for models that are small n (around 50). For this model, we are following fairly close to the line, and do not appear to be wildly violating the normality assumption.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">qqPlot</span>(model2)</code></pre></div>
+<p><img src="Bookdown_files/figure-html/unnamed-chunk-10-1.png" width="672" /></p>
+<pre><code>## [1] 853 854</code></pre>
+<p>a less informative, but easier to understand option is to do a histogram of residuals.</p>
+<p>Another more check on the residuals using a histogram. I am looking here to just see that our residuals are, overall, primarily around 0. We do see a little tail here to the left, but nothing that is too crazy.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(modelr)
+
+gapminder_results &lt;-<span class="st"> </span>gapminder <span class="op">%&gt;%</span>
+<span class="st">  </span><span class="kw">add_residuals</span>(model2)
+
+<span class="kw">ggplot</span>(gapminder_results, <span class="kw">aes</span>(resid)) <span class="op">+</span>
+<span class="st">  </span><span class="kw">geom_histogram</span>() <span class="op">+</span>
+<span class="st">  </span><span class="kw">geom_vline</span>(<span class="dt">xintercept =</span> <span class="dv">0</span>, <span class="dt">color =</span> <span class="st">&quot;black&quot;</span>, <span class="dt">size =</span> <span class="dv">2</span>)</code></pre></div>
+<p><img src="Bookdown_files/figure-html/unnamed-chunk-11-1.png" width="672" /></p>
+<p>Here we are seeing that our results appear to be somewhat normally distributed, but it does have a longer tail on the left.</p>
+<p>Another numeric technique to determine if our errors are normally distributed is the Jarque Bera Normality test (using the <code>moments</code>) package. From here we reject the null hypothesis that the errors are normally distributed. While not a true Gauss-Markov assumptions, we may want to consider using a generalized linear model which allows us to fit a different distribution.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(moments)</code></pre></div>
+<pre><code>## Warning: package &#39;moments&#39; was built under R version 3.5.2</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">jarque.test</span>(gapminder_results<span class="op">$</span>resid)</code></pre></div>
+<pre><code>## 
+##  Jarque-Bera Normality Test
+## 
+## data:  gapminder_results$resid
+## JB = 98.4, p-value &lt; 2.2e-16
+## alternative hypothesis: greater</code></pre>
+</div>
+<div id="heteroskedasticity" class="section level3">
+<h3><span class="header-section-number">3.4.2</span> Heteroskedasticity</h3>
+<p>One of the assumptions of OLS is that you have constant variance in the residuals (homoskedasticity). Residuals are best described as the distance between your model and your actual data (they are also known as the error term or “left-overs”). You would expect that the distance between your data and the predicted outcome to be the same across all observations (across all continents and GDP/capita). Otherwise you will have a biased model.</p>
+<p>There are two different ways to look for Heteroskedasticity. First is the graphical look. Calling the <code>plot()</code> function with the model included will produce 4 graphs. You want to look primarily at the fist chart. If you do violate the assumption of homoskedasticity (hence, you have heteroskedasticity) then you would see equal distribution of point around 0 for across the x-axis.</p>
+<p>I would note that the other 3 charts are also checks on your model. The second chart is another Q-Q plot. Feel free to dive deeper into these charts, but I am going to move on.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">plot</span>(model2)</code></pre></div>
+<p><img src="Bookdown_files/figure-html/unnamed-chunk-13-1.png" width="672" /><img src="Bookdown_files/figure-html/unnamed-chunk-13-2.png" width="672" /><img src="Bookdown_files/figure-html/unnamed-chunk-13-3.png" width="672" /><img src="Bookdown_files/figure-html/unnamed-chunk-13-4.png" width="672" /></p>
+<p>If you want a more formal test of heteroskedasticity, you use the <code>car</code> package’s <code>ncvTest</code> which is the Breush-Pagan test or Non-constant error variance test. For this one, you are looking at the p-value and making a normal hypothesis test with the null hypothesis being that there is homoskedasticity.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ncvTest</span>(model2)</code></pre></div>
+<pre><code>## Non-constant Variance Score Test 
+## Variance formula: ~ fitted.values 
+## Chisquare = 49.29342, Df = 1, p = 2.204e-12</code></pre>
+<p>Here we definitely show significance and need to use some sort of fix for this problem. With heteroskedasticity, your results will be biased and inefficient. The most common way to fix this problem is to use Huber-White robust standard erros (also known as sandwich standard errors). This doesn’t actually fix the problem of inefficiency, but does help wih the bias.</p>
+<p>Using the <code>lmtest</code> and <code>sandwich</code> packages, we can obtain those robust standard errors. You will see that getting the coefficients are the same with both the lines is the same, but the standard errors, t-stats and p-values are different. If you wanted a different method, you could use Weighted Least Squares regression (WLS), but that is for another text. The WLS will be a better estimate than simply using robust standard errors, but that is only true if we have properly modeled the error variance.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(sandwich)
+<span class="kw">library</span>(lmtest)
+
+<span class="kw">summary</span>(model2)</code></pre></div>
+<pre><code>## 
+## Call:
+## lm(formula = lifeExp ~ log10(gdpPercap) + continent, data = gapminder)
+## 
+## Residuals:
+##      Min       1Q   Median       3Q      Max 
+## -27.1163  -3.4739   0.4336   4.3519  18.5632 
+## 
+## Coefficients:
+##                   Estimate Std. Error t value Pr(&gt;|t|)    
+## (Intercept)         2.3170     1.3594   1.704   0.0885 .  
+## log10(gdpPercap)   14.7871     0.4225  35.003  &lt; 2e-16 ***
+## continentAmericas   7.0147     0.5544  12.652  &lt; 2e-16 ***
+## continentAsia       5.9117     0.4768  12.400  &lt; 2e-16 ***
+## continentEurope     9.5771     0.6041  15.855  &lt; 2e-16 ***
+## continentOceania    9.2135     1.5359   5.999 2.42e-09 ***
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+## Residual standard error: 7.038 on 1698 degrees of freedom
+## Multiple R-squared:  0.704,  Adjusted R-squared:  0.7031 
+## F-statistic: 807.6 on 5 and 1698 DF,  p-value: &lt; 2.2e-16</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">coeftest</span>(model2, <span class="dt">vcov =</span> vcovHC)</code></pre></div>
+<pre><code>## 
+## t test of coefficients:
+## 
+##                   Estimate Std. Error t value Pr(&gt;|t|)    
+## (Intercept)        2.31701    1.64432  1.4091    0.159    
+## log10(gdpPercap)  14.78713    0.53360 27.7120   &lt;2e-16 ***
+## continentAmericas  7.01468    0.65568 10.6983   &lt;2e-16 ***
+## continentAsia      5.91171    0.58402 10.1225   &lt;2e-16 ***
+## continentEurope    9.57713    0.65965 14.5185   &lt;2e-16 ***
+## continentOceania   9.21348    0.81266 11.3374   &lt;2e-16 ***
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1</code></pre>
+<p>You can use these results to present in your results.</p>
+</div>
+<div id="multicollinearity" class="section level3">
+<h3><span class="header-section-number">3.4.3</span> Multicollinearity</h3>
+<p>In multiple regression we assume that there is “no perfect multicollinearity”. If you are at this point, you don’t have this problem. R would not compute the model correctly if you had multicollienarity problems. To have a perfectly multicollinearity would happen if we included GDP per capita in dollars and Pesos. These variables would have a correlation of 1 because it is showing the exact same data. While we do not have to worry about perfect multicollinearity, we do want to see if there is high multicollinearity in our model. If we do, we basically have a redundant predictor and our model could be unstable when introduced to slight changes in the data.</p>
+<p>Using the <code>car</code> package, we want to check to see if we have a problem with multicollinearity by using the <em>variance inflation factor</em> or VIF. For each of our covariates we will get a VIF score. The minimum value is 1 and you should only start poking around if you have a score over 5. Though, as a rule of thumb, whenever your VIF exceeds 10, we can start to believe that our model is being shaped by the multicollinearity. To give you an idea, a VIF of 10 means that 90% of hte variance of one predictor can be explained by the other predictors. Unlike other test statistics though, there is no hard and fast number. You really have to take this in context of the findings.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">vif</span>(model2)</code></pre></div>
+<pre><code>##                      GVIF Df GVIF^(1/(2*Df))
+## log10(gdpPercap) 1.782678  1         1.33517
+## continent        1.782678  4         1.07494</code></pre>
+<p>In our case, the VIF scores for each variable fit in the normal range. No problems here, moving on.</p>
+</div>
+<div id="outliers-and-leverage" class="section level3">
+<h3><span class="header-section-number">3.4.4</span> Outliers and leverage</h3>
+<p>If only a few observations are driving our results, then we may not be able to trust our model. There are three general types of problems (note, a lot of this discussion was adapted based off of <em>Political Analysis Using R</em> by James E. Monogon III):</p>
+<ol style="list-style-type: decimal">
+<li>Outliers: observations with exceedingly large residuals</li>
+<li>Leverage points: takes a value of a predictor that is disproportionately distant from other values</li>
+<li>Influence points: outliers with a lot of leverage</li>
+</ol>
+<p>Influence points are particularly problemsome because they can mess up our model the most.</p>
+<p>By creating scatterplots, we can start to gain an idea of different problems. “If an observation stands out on the predictor’s scale then it has leverage. If it stands out on the residual scale then it is an outlier. If it stands out on both dimensions, then it is an influence point.” Using the <code>influenceIndexPlot</code> from the <code>car</code> package, we can see the different indicators that we are having an issue. For instance, a value of 1 for Cook’s distance would indicatre the presence of influential data points. Studentized residuals detect outliers, and hat values detect leverage points. We can see here that there are a few points that seem problematic, but it is up to the researcher to determine how to handle the data (you can delete them but you open yourself up to bias).</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">influenceIndexPlot</span>(model2, <span class="dt">vars =</span> <span class="kw">c</span>(<span class="st">&quot;Cook&quot;</span>, <span class="st">&quot;Studentized&quot;</span>, <span class="st">&quot;hat&quot;</span>), <span class="dt">id.n =</span> <span class="dv">5</span>)</code></pre></div>
+<pre><code>## Warning in plot.window(...): &quot;id.n&quot; is not a graphical parameter</code></pre>
+<pre><code>## Warning in plot.xy(xy, type, ...): &quot;id.n&quot; is not a graphical parameter</code></pre>
+<pre><code>## Warning in axis(side = side, at = at, labels = labels, ...): &quot;id.n&quot; is not
+## a graphical parameter
+
+## Warning in axis(side = side, at = at, labels = labels, ...): &quot;id.n&quot; is not
+## a graphical parameter</code></pre>
+<pre><code>## Warning in box(...): &quot;id.n&quot; is not a graphical parameter</code></pre>
+<pre><code>## Warning in title(...): &quot;id.n&quot; is not a graphical parameter</code></pre>
+<pre><code>## Warning in plot.xy(xy.coords(x, y), type = type, ...): &quot;id.n&quot; is not a
+## graphical parameter
+
+## Warning in plot.xy(xy.coords(x, y), type = type, ...): &quot;id.n&quot; is not a
+## graphical parameter</code></pre>
+<pre><code>## Warning in plot.window(...): &quot;id.n&quot; is not a graphical parameter</code></pre>
+<pre><code>## Warning in plot.xy(xy, type, ...): &quot;id.n&quot; is not a graphical parameter</code></pre>
+<pre><code>## Warning in axis(side = side, at = at, labels = labels, ...): &quot;id.n&quot; is not
+## a graphical parameter
+
+## Warning in axis(side = side, at = at, labels = labels, ...): &quot;id.n&quot; is not
+## a graphical parameter</code></pre>
+<pre><code>## Warning in box(...): &quot;id.n&quot; is not a graphical parameter</code></pre>
+<pre><code>## Warning in title(...): &quot;id.n&quot; is not a graphical parameter</code></pre>
+<pre><code>## Warning in plot.xy(xy.coords(x, y), type = type, ...): &quot;id.n&quot; is not a
+## graphical parameter
+
+## Warning in plot.xy(xy.coords(x, y), type = type, ...): &quot;id.n&quot; is not a
+## graphical parameter</code></pre>
+<pre><code>## Warning in plot.window(...): &quot;id.n&quot; is not a graphical parameter</code></pre>
+<pre><code>## Warning in plot.xy(xy, type, ...): &quot;id.n&quot; is not a graphical parameter</code></pre>
+<pre><code>## Warning in axis(side = side, at = at, labels = labels, ...): &quot;id.n&quot; is not
+## a graphical parameter
+
+## Warning in axis(side = side, at = at, labels = labels, ...): &quot;id.n&quot; is not
+## a graphical parameter</code></pre>
+<pre><code>## Warning in box(...): &quot;id.n&quot; is not a graphical parameter</code></pre>
+<pre><code>## Warning in title(...): &quot;id.n&quot; is not a graphical parameter</code></pre>
+<pre><code>## Warning in plot.xy(xy.coords(x, y), type = type, ...): &quot;id.n&quot; is not a
+## graphical parameter
+
+## Warning in plot.xy(xy.coords(x, y), type = type, ...): &quot;id.n&quot; is not a
+## graphical parameter</code></pre>
+<p><img src="Bookdown_files/figure-html/unnamed-chunk-17-1.png" width="672" /></p>
+</div>
+<div id="autocorrelation" class="section level3">
+<h3><span class="header-section-number">3.4.5</span> Autocorrelation</h3>
+<p>NOTE: I am skipping this assumption because it is primarily concerning times series, but I am including a small discussion and code for discussing autocorrelation.</p>
+<p>Another assumption of OLS regression is that our errors are not correlated. This is grouped into the “independence” assumption of “iid”. Autocorrelation is less of an issue with cross-sectional studies and more with times series. For instance, if you are looking at the GDP of a country over time, you would expect that the best predictor of GDP or the U.S. is the GDP of the U.S. the previous year. This means that there is autocorrelation and we are violating the independence assumption..</p>
+<p>To test for this assumption, we can use the Durbin Watson Test. You will get a D-W Statistic which will range from 0 to 4, with a score of 2 showing no autocorrelation. You will see a p-value that tests the null hypothesis that there is no correlation among the residual (meaning the residuals are independent).</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">durbinWatsonTest</span>(model2)</code></pre></div>
+<pre><code>##  lag Autocorrelation D-W Statistic p-value
+##    1       0.7599568     0.4742002       0
+##  Alternative hypothesis: rho != 0</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">dwtest</span>(model2)</code></pre></div>
+<pre><code>## 
+##  Durbin-Watson test
+## 
+## data:  model2
+## DW = 0.4742, p-value &lt; 2.2e-16
+## alternative hypothesis: true autocorrelation is greater than 0</code></pre>
+<p>NEEDT TO DO SOMETHING ABOUT THE AUTOCORRELATION (PROBABLY AN AR(1))</p>
+<p>At this point, I am satisfied that we are not seriously violating any assumption. Now I am at a point where I okay with moving onto predictions. While predictions are the fun part of a model, it is not advised until you do the hard work of checking assumptions. If you do this out of order, you risk giving predictions based off of a bad model. I particularly like the quote: “all models are wrong but some are useful.” - George E.P. Box</p>
+</div>
+<div id="residual-analysis" class="section level3">
+<h3><span class="header-section-number">3.4.6</span> Residual Analysis</h3>
+<p>Beyond the formal tests, it is also good to see how your model does with residuals against your different independent variables. The first code creates a new data frame (using the school_1 data) and then adds the residual for each observation. What follows is a series of plots to see how the residuals are distributed. Use this to see if your residuals are showing a pattern, or seem to be roughly random (or normally distributed).</p>
+<p>The first bit of code creates a new dataset, <code>school_1_graduation</code> using <code>school_1</code> then uses the <code>modelr</code> package to <code>add_residuals</code> passing in our <code>graduation_gpa_model</code>.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(gapminder_results, <span class="kw">aes</span>(resid)) <span class="op">+</span>
+<span class="st">  </span><span class="kw">geom_density</span>()</code></pre></div>
+<p><img src="Bookdown_files/figure-html/unnamed-chunk-19-1.png" width="672" /></p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(gapminder_results, <span class="kw">aes</span>(<span class="dt">x =</span> <span class="kw">log10</span>(gdpPercap), <span class="dt">y =</span> resid)) <span class="op">+</span>
+<span class="st">  </span><span class="kw">geom_point</span>()</code></pre></div>
+<p><img src="Bookdown_files/figure-html/unnamed-chunk-19-2.png" width="672" /></p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">gapminder_results <span class="op">%&gt;%</span>
+<span class="st">  </span><span class="kw">group_by</span>(continent) <span class="op">%&gt;%</span>
+<span class="st">  </span><span class="kw">mutate</span>(<span class="dt">squared_resid =</span> resid<span class="op">^</span><span class="dv">2</span>) <span class="op">%&gt;%</span>
+<span class="st">  </span><span class="kw">summarise</span>(<span class="dt">average_squared_resid =</span> <span class="kw">mean</span>(squared_resid)) <span class="op">%&gt;%</span>
+<span class="st">  </span><span class="kw">ggplot</span>(<span class="kw">aes</span>(<span class="dt">x =</span> continent, <span class="dt">y =</span> average_squared_resid)) <span class="op">+</span>
+<span class="st">  </span><span class="kw">geom_col</span>() <span class="op">+</span>
+<span class="st">  </span><span class="kw">labs</span>(<span class="dt">y =</span> <span class="st">&quot;Average Squared Residual&quot;</span>)</code></pre></div>
+<pre><code>## Warning: package &#39;bindrcpp&#39; was built under R version 3.5.2</code></pre>
+<p><img src="Bookdown_files/figure-html/unnamed-chunk-19-3.png" width="672" /></p>
+</div>
+</div>
+<div id="displaying-results" class="section level2">
+<h2><span class="header-section-number">3.5</span> Displaying Results</h2>
+<p>Now that you have done the analyses, you know if you need to make any changes before you start to display the results (it is not worth making predictions if we aren’t sure if the model is worth anything).</p>
+<div id="tables" class="section level3">
+<h3><span class="header-section-number">3.5.1</span> Tables</h3>
+<p>One of the simplest methods to get a table is to use the <code>stargazer</code> command which comes from the <code>stargazer</code> package. The commands for this are pretty simple, you can simply call <code>stargazer(model2, type = &quot;text&quot;)</code> to get something that you can read in R.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">stargazer</span>(model2, <span class="dt">type =</span> <span class="st">&quot;text&quot;</span>)</code></pre></div>
+<pre><code>## 
+## ===============================================
+##                         Dependent variable:    
+##                     ---------------------------
+##                               lifeExp          
+## -----------------------------------------------
+## log10(gdpPercap)             14.787***         
+##                               (0.422)          
+##                                                
+## continentAmericas            7.015***          
+##                               (0.554)          
+##                                                
+## continentAsia                5.912***          
+##                               (0.477)          
+##                                                
+## continentEurope              9.577***          
+##                               (0.604)          
+##                                                
+## continentOceania             9.213***          
+##                               (1.536)          
+##                                                
+## Constant                      2.317*           
+##                               (1.359)          
+##                                                
+## -----------------------------------------------
+## Observations                   1,704           
+## R2                             0.704           
+## Adjusted R2                    0.703           
+## Residual Std. Error      7.038 (df = 1698)     
+## F Statistic          807.634*** (df = 5; 1698) 
+## ===============================================
+## Note:               *p&lt;0.1; **p&lt;0.05; ***p&lt;0.01</code></pre>
+<p>If you do not specify the type, the command will print out the <span class="math inline">\(\LaTeX\)</span> code to make the same table, which is very hard for a human to read the print out.</p>
+<p>There are a number of ways to customize the table to include even multiple models (great when you have slight variations). You can even show different output.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">stargazer</span>(model1, model2, <span class="dt">type =</span> <span class="st">&quot;text&quot;</span>, <span class="dt">report =</span> (<span class="st">&#39;vc*p&#39;</span>))</code></pre></div>
+<pre><code>## 
+## =========================================================================
+##                                      Dependent variable:                 
+##                     -----------------------------------------------------
+##                                            lifeExp                       
+##                                 (1)                        (2)           
+## -------------------------------------------------------------------------
+## log10(gdpPercap)             19.353***                  14.787***        
+##                              p = 0.000                  p = 0.000        
+##                                                                          
+## continentAmericas                                       7.015***         
+##                                                         p = 0.000        
+##                                                                          
+## continentAsia                                           5.912***         
+##                                                         p = 0.000        
+##                                                                          
+## continentEurope                                         9.577***         
+##                                                         p = 0.000        
+##                                                                          
+## continentOceania                                        9.213***         
+##                                                         p = 0.000        
+##                                                                          
+## Constant                     -9.101***                   2.317*          
+##                              p = 0.000                  p = 0.089        
+##                                                                          
+## -------------------------------------------------------------------------
+## Observations                   1,704                      1,704          
+## R2                             0.652                      0.704          
+## Adjusted R2                    0.652                      0.703          
+## Residual Std. Error      7.620 (df = 1702)          7.038 (df = 1698)    
+## F Statistic         3,192.273*** (df = 1; 1702) 807.634*** (df = 5; 1698)
+## =========================================================================
+## Note:                                         *p&lt;0.1; **p&lt;0.05; ***p&lt;0.01</code></pre>
+<p>In the code above, I told stargazer to include both of the models we created earlier. In addition I used the <code>report</code> option to get different outputs:</p>
+<ul>
+<li>c: Coefficient</li>
+<li>V: Variable name</li>
+<li>*: significance stars</li>
+<li>p: p-values</li>
+</ul>
+<p>These are the four basic things I like to include, but there are many different options.</p>
+<p>As mentioned, this is not quite production ready. I would recommend actually having stargazer create a new word document usin the <code>out</code> option and then specifying a file path/name. Also, having the table type be html makes this a lot easier to manipulate.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># stargazer(model1, model2, type = &quot;html&quot;, report = (&#39;cv*p&#39;), out = &quot;example table.doc&quot;)</span></code></pre></div>
+<p>All of this being said, I would actually not use the stargazer table for model2 because we know we suffer from heteroskedasticity. Instead I would call the <code>coeftest(model2, vcov = vcovHC)</code> again and hand create a table from that.</p>
+</div>
+<div id="coefplots" class="section level3">
+<h3><span class="header-section-number">3.5.2</span> Coefplots</h3>
+<p>Coefficient Plots, also referred to as coefplots, are a great way to show visually what a standard table reports. Here we are using the <code>broom</code> package’s <code>tidy()</code> function to get a tidy data frame of our output. The tidy() function will return one row for every term (variable including the intercept) and a column for the term, estimate (coefficient), standard error, test statistic, and pvalue.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">tidy</span>(model2)</code></pre></div>
+<pre><code>## # A tibble: 6 x 5
+##   term              estimate std.error statistic   p.value
+##   &lt;chr&gt;                &lt;dbl&gt;     &lt;dbl&gt;     &lt;dbl&gt;     &lt;dbl&gt;
+## 1 (Intercept)           2.32     1.36       1.70 8.85e-  2
+## 2 log10(gdpPercap)     14.8      0.422     35.0  1.50e-202
+## 3 continentAmericas     7.01     0.554     12.7  3.99e- 35
+## 4 continentAsia         5.91     0.477     12.4  7.30e- 34
+## 5 continentEurope       9.58     0.604     15.9  6.70e- 53
+## 6 continentOceania      9.21     1.54       6.00 2.42e-  9</code></pre>
+<p>The nicest thing about the tidy() function is that it allows you to use the tidyverse framework. In the code below I am creating a 95% confidence interval using the <code>mutate</code> command. First I am getting the low end of the confidence interval by subtracting the <code>1.96 * std.error</code> from the coefficient estimate. The I repeat, but add to create the high end of estimate. Lastly, I am reordering the variable <code>term</code> knowing that later this will make the graph look nicer. Now I have everything I need to create a coefplot!</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">tidy</span>(model2) <span class="op">%&gt;%</span>
+<span class="st">  </span><span class="kw">mutate</span>(<span class="dt">low =</span> estimate <span class="op">-</span><span class="st"> </span>(<span class="fl">1.96</span> <span class="op">*</span><span class="st"> </span>std.error),
+         <span class="dt">high =</span> estimate <span class="op">+</span><span class="st"> </span>(<span class="fl">1.96</span> <span class="op">*</span><span class="st"> </span>std.error),
+         <span class="dt">term =</span> <span class="kw">fct_reorder</span>(term, estimate))</code></pre></div>
+<pre><code>## # A tibble: 6 x 7
+##   term              estimate std.error statistic   p.value     low  high
+##   &lt;fct&gt;                &lt;dbl&gt;     &lt;dbl&gt;     &lt;dbl&gt;     &lt;dbl&gt;   &lt;dbl&gt; &lt;dbl&gt;
+## 1 (Intercept)           2.32     1.36       1.70 8.85e-  2  -0.347  4.98
+## 2 log10(gdpPercap)     14.8      0.422     35.0  1.50e-202  14.0   15.6 
+## 3 continentAmericas     7.01     0.554     12.7  3.99e- 35   5.93   8.10
+## 4 continentAsia         5.91     0.477     12.4  7.30e- 34   4.98   6.85
+## 5 continentEurope       9.58     0.604     15.9  6.70e- 53   8.39  10.8 
+## 6 continentOceania      9.21     1.54       6.00 2.42e-  9   6.20  12.2</code></pre>
+<p>When graphing I have decided to make a geom_point with the x axis being the term, and the y to be location of the estimate. The next line allows us to get an idea of our 95% confidence interval using <code>geom_pointrange()</code>. This allows us to use our new variables <code>low</code> and <code>high</code> to create a line line. Then we add the geom_hline with a y-intercept of 0 to help the viewer determine if the variable is significant at a 95% confidence level. If the estimate or the confidence band (created by geom_pointrange) crosses the red line, then we cannot reject the null hypothesis. Lastly, I do a coord_flip() to make it easier to read the graph (will flip our axes so that the x now looks like the y and the y looks like the x)</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">tidy</span>(model2) <span class="op">%&gt;%</span>
+<span class="st">  </span><span class="kw">mutate</span>(<span class="dt">low =</span> estimate <span class="op">-</span><span class="st"> </span>(<span class="fl">1.96</span> <span class="op">*</span><span class="st"> </span>std.error),
+         <span class="dt">high =</span> estimate <span class="op">+</span><span class="st"> </span>(<span class="fl">1.96</span> <span class="op">*</span><span class="st"> </span>std.error),
+         <span class="dt">term =</span> <span class="kw">fct_reorder</span>(term, estimate)) <span class="op">%&gt;%</span>
+<span class="st">  </span><span class="kw">ggplot</span>(<span class="kw">aes</span>(<span class="dt">x =</span> term, <span class="dt">y =</span> estimate)) <span class="op">+</span>
+<span class="st">  </span><span class="kw">geom_point</span>() <span class="op">+</span>
+<span class="st">  </span><span class="kw">geom_pointrange</span>(<span class="kw">aes</span>(<span class="dt">ymin =</span> low, <span class="dt">ymax =</span> high)) <span class="op">+</span>
+<span class="st">  </span><span class="kw">geom_hline</span>(<span class="dt">yintercept =</span> <span class="dv">0</span>, <span class="dt">color =</span> <span class="st">&quot;red&quot;</span>, <span class="dt">size =</span> <span class="dv">1</span>) <span class="op">+</span>
+<span class="st">  </span><span class="kw">coord_flip</span>()</code></pre></div>
+<p><img src="Bookdown_files/figure-html/unnamed-chunk-25-1.png" width="672" /></p>
+<p>There are things I would change, such as the labels for the axes and the <code>term</code>s, but was made to show you how to do the basics. You should be able to google these small cosmetic changes.</p>
+</div>
+<div id="graphing-predictions" class="section level3">
+<h3><span class="header-section-number">3.5.3</span> Graphing predictions</h3>
+<p>One of the most important aspects running tests is to show your results in a clean format. While tables and text are possible, graphs are almost always preferred. Here we will show three different graphs for predictions.</p>
+<p>The first graph shows the predictions based off of simulated data that varies <code>gdpPercap</code>. This is easily accomplished with the <code>modelr</code> package. In the code below, we first call the dataset. Then we call <code>data_grid</code> which gets requires one argument: the variable(s) you would like to have vary. If you specify a <code>.model</code> argument, it will fill all covariates at their typical value (mean or mode) of the data used in the model. If you run the first two lines, it will show two columns. The first is <code>gdpPercap</code> which has different values ranging from the minimum and maximum from the dataset used. The second column is our covariate (in this model we had two variables so there are only two columns here). The third line <code>add_prediction(model2)</code>, tells R to take this new dataset and make predictions based off the results of model2. This command creates a third column called <code>pred</code> (predictions).</p>
+<p>Once you have this data, it becomes a simple ggplot() problem. Here I have used <code>geom_line()</code> to create a line graph. Because we used a logarithmic transformation, I have added the <code>scale_x_log10(labels = comma_format())</code>. This puts the x-axis on a logarithmic scale. The comma_format() is only used to make the graph easier to understand.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">gapminder <span class="op">%&gt;%</span>
+<span class="st">  </span><span class="kw">data_grid</span>(gdpPercap, <span class="dt">.model =</span> model2) <span class="op">%&gt;%</span>
+<span class="st">  </span><span class="kw">add_predictions</span>(model2) <span class="op">%&gt;%</span>
+<span class="st">  </span><span class="kw">ggplot</span>(<span class="kw">aes</span>(<span class="dt">x =</span> gdpPercap, <span class="dt">y =</span> pred)) <span class="op">+</span>
+<span class="st">  </span><span class="kw">geom_line</span>() <span class="op">+</span>
+<span class="st">  </span><span class="kw">scale_x_log10</span>(<span class="dt">labels =</span> <span class="kw">comma_format</span>()) </code></pre></div>
+<p><img src="Bookdown_files/figure-html/unnamed-chunk-26-1.png" width="672" /></p>
+<p>The graph below shows similar results, but I added one layer of complexity. Here I told <code>data_grid</code> to vary not only <code>gdpPercap</code> but also <code>continent</code>. Now instead of 1704 rows we have 8520 (for those paying attention that is 1704 multiplied by the number of continents). The only other change is that I added the <code>color = contintent</code> argument to create a line for each continent. You will see that each line is parallel to each other. The difference between each line is the coefficient for each continent.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">gapminder <span class="op">%&gt;%</span>
+<span class="st">  </span><span class="kw">data_grid</span>(gdpPercap, continent, <span class="dt">.model =</span> model2) <span class="op">%&gt;%</span>
+<span class="st">  </span><span class="kw">add_predictions</span>(model2) <span class="op">%&gt;%</span>
+<span class="st">  </span><span class="kw">ggplot</span>(<span class="kw">aes</span>(<span class="dt">x =</span> gdpPercap, <span class="dt">y =</span> pred, <span class="dt">color =</span> continent)) <span class="op">+</span>
+<span class="st">  </span><span class="kw">geom_line</span>() <span class="op">+</span>
+<span class="st">  </span><span class="kw">scale_x_log10</span>(<span class="dt">labels =</span> scales<span class="op">::</span><span class="kw">comma_format</span>()) </code></pre></div>
+<p><img src="Bookdown_files/figure-html/unnamed-chunk-27-1.png" width="672" /></p>
+<p>The last graph to show is a bar chart (though I used <code>geom_col()</code>) of the different predictions for each continent. This uses almost the same exact code to create the data_grid. To make the graph look a little nicer, I decided to reorder the continents by prediction <code>continent = fct_reorder(continent, pred)</code>. This isn’t necessary, but a nice addition.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">gapminder <span class="op">%&gt;%</span>
+<span class="st">  </span><span class="kw">data_grid</span>(continent, <span class="dt">.model =</span> model2) <span class="op">%&gt;%</span>
+<span class="st">  </span><span class="kw">add_predictions</span>(model2) <span class="op">%&gt;%</span>
+<span class="st">  </span><span class="kw">mutate</span>(<span class="dt">continent =</span> <span class="kw">fct_reorder</span>(continent, pred)) <span class="op">%&gt;%</span>
+<span class="st">  </span><span class="kw">ggplot</span>(<span class="kw">aes</span>(<span class="dt">x =</span> continent, <span class="dt">y =</span> pred)) <span class="op">+</span>
+<span class="st">  </span><span class="kw">geom_col</span>()</code></pre></div>
+<p><img src="Bookdown_files/figure-html/unnamed-chunk-28-1.png" width="672" /></p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">?add_predictions</code></pre></div>
+<pre><code>## starting httpd help server ... done</code></pre>
+
+</div>
+</div>
+</div>
+            </section>
+
+          </div>
+        </div>
+      </div>
+<a href="intro.html" class="navigation navigation-prev " aria-label="Previous page"><i class="fa fa-angle-left"></i></a>
+<a href="logit-models.html" class="navigation navigation-next " aria-label="Next page"><i class="fa fa-angle-right"></i></a>
+    </div>
+  </div>
+<script src="libs/gitbook-2.6.7/js/app.min.js"></script>
+<script src="libs/gitbook-2.6.7/js/lunr.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-search.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-sharing.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-fontsettings.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-bookdown.js"></script>
+<script src="libs/gitbook-2.6.7/js/jquery.highlight.js"></script>
+<script>
+gitbook.require(["gitbook"], function(gitbook) {
+gitbook.start({
+"sharing": {
+"github": false,
+"facebook": true,
+"twitter": true,
+"google": false,
+"linkedin": false,
+"weibo": false,
+"instapaper": false,
+"vk": false,
+"all": ["facebook", "google", "twitter", "linkedin", "weibo", "instapaper"]
+},
+"fontsettings": {
+"theme": "white",
+"family": "sans",
+"size": 2
+},
+"edit": {
+"link": null,
+"text": null
+},
+"history": {
+"link": null,
+"text": null
+},
+"download": ["Bookdown.pdf", "Bookdown.epub"],
+"toc": {
+"collapse": "subsection"
+}
+});
+});
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    var src = "";
+    if (src === "" || src === "true") src = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-MML-AM_CHTML";
+    if (location.protocol !== "file:" && /^https?:/.test(src))
+      src = src.replace(/^https?:/, '');
+    script.src = src;
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+</body>
+
+</html>

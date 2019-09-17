@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html >
+
+<head>
+
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <title>Chapter 9 Understanding and reporting the outputs | Legal Education Analysis in R</title>
+  <meta name="description" content="This is a minimal example of using the bookdown package to write a book. The output format for this example is bookdown::gitbook.">
+  <meta name="generator" content="bookdown  and GitBook 2.6.7">
+
+  <meta property="og:title" content="Chapter 9 Understanding and reporting the outputs | Legal Education Analysis in R" />
+  <meta property="og:type" content="book" />
+  
+  
+  <meta property="og:description" content="This is a minimal example of using the bookdown package to write a book. The output format for this example is bookdown::gitbook." />
+  
+
+  <meta name="twitter:card" content="summary" />
+  <meta name="twitter:title" content="Chapter 9 Understanding and reporting the outputs | Legal Education Analysis in R" />
+  
+  <meta name="twitter:description" content="This is a minimal example of using the bookdown package to write a book. The output format for this example is bookdown::gitbook." />
+  
+
+<meta name="author" content="Richard G. Gardiner">
+
+
+<meta name="date" content="2019-04-29">
+
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  
+  
+<link rel="prev" href="multi-level-models.html">
+<link rel="next" href="model-comaprison-with-anova.html">
+<script src="libs/jquery-2.2.3/jquery.min.js"></script>
+<link href="libs/gitbook-2.6.7/css/style.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-table.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-bookdown.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-highlight.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-search.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-fontsettings.css" rel="stylesheet" />
+
+
+
+
+
+
+
+
+
+<style type="text/css">
+div.sourceCode { overflow-x: auto; }
+table.sourceCode, tr.sourceCode, td.lineNumbers, td.sourceCode {
+  margin: 0; padding: 0; vertical-align: baseline; border: none; }
+table.sourceCode { width: 100%; line-height: 100%; }
+td.lineNumbers { text-align: right; padding-right: 4px; padding-left: 4px; color: #aaaaaa; border-right: 1px solid #aaaaaa; }
+td.sourceCode { padding-left: 5px; }
+code > span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code > span.dt { color: #902000; } /* DataType */
+code > span.dv { color: #40a070; } /* DecVal */
+code > span.bn { color: #40a070; } /* BaseN */
+code > span.fl { color: #40a070; } /* Float */
+code > span.ch { color: #4070a0; } /* Char */
+code > span.st { color: #4070a0; } /* String */
+code > span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code > span.ot { color: #007020; } /* Other */
+code > span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code > span.fu { color: #06287e; } /* Function */
+code > span.er { color: #ff0000; font-weight: bold; } /* Error */
+code > span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+code > span.cn { color: #880000; } /* Constant */
+code > span.sc { color: #4070a0; } /* SpecialChar */
+code > span.vs { color: #4070a0; } /* VerbatimString */
+code > span.ss { color: #bb6688; } /* SpecialString */
+code > span.im { } /* Import */
+code > span.va { color: #19177c; } /* Variable */
+code > span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code > span.op { color: #666666; } /* Operator */
+code > span.bu { } /* BuiltIn */
+code > span.ex { } /* Extension */
+code > span.pp { color: #bc7a00; } /* Preprocessor */
+code > span.at { color: #7d9029; } /* Attribute */
+code > span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code > span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code > span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+</style>
+
+<link rel="stylesheet" href="style.css" type="text/css" />
+</head>
+
+<body>
+
+
+
+  <div class="book without-animation with-summary font-size-2 font-family-1" data-basepath=".">
+
+    <div class="book-summary">
+      <nav role="navigation">
+
+<ul class="summary">
+<li><a href="./">A Minimal Book Example</a></li>
+
+<li class="divider"></li>
+<li class="chapter" data-level="1" data-path="index.html"><a href="index.html"><i class="fa fa-check"></i><b>1</b> About the Book</a></li>
+<li class="chapter" data-level="2" data-path="intro.html"><a href="intro.html"><i class="fa fa-check"></i><b>2</b> Introduction</a></li>
+<li class="chapter" data-level="3" data-path="ols.html"><a href="ols.html"><i class="fa fa-check"></i><b>3</b> OLS</a><ul>
+<li class="chapter" data-level="3.1" data-path="ols.html"><a href="ols.html#intuition"><i class="fa fa-check"></i><b>3.1</b> Intuition</a></li>
+<li class="chapter" data-level="3.2" data-path="ols.html"><a href="ols.html#running-your-first-regression"><i class="fa fa-check"></i><b>3.2</b> Running your first regression</a></li>
+</ul></li>
+<li class="chapter" data-level="4" data-path="logit-models.html"><a href="logit-models.html"><i class="fa fa-check"></i><b>4</b> Logit Models</a><ul>
+<li class="chapter" data-level="4.1" data-path="logit-models.html"><a href="logit-models.html#introducing-logit-models"><i class="fa fa-check"></i><b>4.1</b> Introducing Logit Models</a></li>
+<li class="chapter" data-level="4.2" data-path="logit-models.html"><a href="logit-models.html#example-of-logit-model"><i class="fa fa-check"></i><b>4.2</b> Example of Logit Model</a></li>
+<li class="chapter" data-level="4.3" data-path="logit-models.html"><a href="logit-models.html#adding-predictions"><i class="fa fa-check"></i><b>4.3</b> Adding Predictions</a></li>
+<li class="chapter" data-level="4.4" data-path="logit-models.html"><a href="logit-models.html#how-did-our-model-do"><i class="fa fa-check"></i><b>4.4</b> How did our model do?</a></li>
+<li class="chapter" data-level="4.5" data-path="logit-models.html"><a href="logit-models.html#final-words"><i class="fa fa-check"></i><b>4.5</b> Final Words</a></li>
+</ul></li>
+<li class="chapter" data-level="5" data-path="ordered-logit-models.html"><a href="ordered-logit-models.html"><i class="fa fa-check"></i><b>5</b> Ordered Logit Models</a><ul>
+<li class="chapter" data-level="5.1" data-path="ordered-logit-models.html"><a href="ordered-logit-models.html#data-and-packages"><i class="fa fa-check"></i><b>5.1</b> Data and Packages</a></li>
+<li class="chapter" data-level="5.2" data-path="ordered-logit-models.html"><a href="ordered-logit-models.html#running-the-model"><i class="fa fa-check"></i><b>5.2</b> Running the Model</a></li>
+<li class="chapter" data-level="5.3" data-path="ordered-logit-models.html"><a href="ordered-logit-models.html#gettin-predictions"><i class="fa fa-check"></i><b>5.3</b> Gettin predictions:</a></li>
+</ul></li>
+<li class="chapter" data-level="6" data-path="showing-predictions.html"><a href="showing-predictions.html"><i class="fa fa-check"></i><b>6</b> Showing predictions</a></li>
+<li class="chapter" data-level="7" data-path="graphing-in-a-tidy-way.html"><a href="graphing-in-a-tidy-way.html"><i class="fa fa-check"></i><b>7</b> Graphing in a Tidy Way</a></li>
+<li class="chapter" data-level="8" data-path="multi-level-models.html"><a href="multi-level-models.html"><i class="fa fa-check"></i><b>8</b> Multi Level Models</a><ul>
+<li class="chapter" data-level="8.1" data-path="multi-level-models.html"><a href="multi-level-models.html#introduction"><i class="fa fa-check"></i><b>8.1</b> Introduction</a><ul>
+<li class="chapter" data-level="8.1.1" data-path="multi-level-models.html"><a href="multi-level-models.html#full-model"><i class="fa fa-check"></i><b>8.1.1</b> full model</a></li>
+<li class="chapter" data-level="8.1.2" data-path="multi-level-models.html"><a href="multi-level-models.html#building-the-model"><i class="fa fa-check"></i><b>8.1.2</b> building the model</a></li>
+</ul></li>
+</ul></li>
+<li class="chapter" data-level="9" data-path="understanding-and-reporting-the-outputs.html"><a href="understanding-and-reporting-the-outputs.html"><i class="fa fa-check"></i><b>9</b> Understanding and reporting the outputs</a><ul>
+<li class="chapter" data-level="9.1" data-path="understanding-and-reporting-the-outputs.html"><a href="understanding-and-reporting-the-outputs.html#communicating-results"><i class="fa fa-check"></i><b>9.1</b> Communicating results</a></li>
+</ul></li>
+<li class="chapter" data-level="10" data-path="model-comaprison-with-anova.html"><a href="model-comaprison-with-anova.html"><i class="fa fa-check"></i><b>10</b> Model comaprison with Anova</a></li>
+<li class="chapter" data-level="11" data-path="binomial-data.html"><a href="binomial-data.html"><i class="fa fa-check"></i><b>11</b> Binomial Data</a></li>
+<li class="chapter" data-level="" data-path="references.html"><a href="references.html"><i class="fa fa-check"></i>References</a></li>
+<li class="divider"></li>
+<li><a href="https://github.com/rstudio/bookdown" target="blank">Published with bookdown</a></li>
+
+</ul>
+
+      </nav>
+    </div>
+
+    <div class="book-body">
+      <div class="body-inner">
+        <div class="book-header" role="navigation">
+          <h1>
+            <i class="fa fa-circle-o-notch fa-spin"></i><a href="./">Legal Education Analysis in R</a>
+          </h1>
+        </div>
+
+        <div class="page-wrapper" tabindex="-1" role="main">
+          <div class="page-inner">
+
+            <section class="normal" id="section-">
+<div id="understanding-and-reporting-the-outputs" class="section level1">
+<h1><span class="header-section-number">Chapter 9</span> Understanding and reporting the outputs</h1>
+<p>Point estimates</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">fixef</span>(fixed_random)</code></pre></div>
+<pre><code>## (Intercept)      phase1 
+##  14.2695219   0.9433342</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ranef</span>(fixed_random)</code></pre></div>
+<pre><code>## $st_fip
+##    (Intercept)        phase1
+## 1  -1.78282438  4.597615e-09
+## 2   1.15330874  4.377183e-10
+## 4   0.12852444  1.930166e-10
+## 5  -2.35878914 -1.237115e-09
+## 6   0.23091628  4.199415e-10
+## 8   2.66045865 -3.606000e-10
+## 9  -1.33099385 -2.003182e-09
+## 10  0.49232783  2.746547e-10
+## 12  0.10160073 -4.770269e-10
+## 13  0.05943937  4.113800e-12
+## 15 -0.17678200 -2.654893e-10
+## 16  0.28163119  1.562015e-10
+## 17  2.17846498 -1.022814e-08
+## 18  1.65088717  2.479285e-09
+## 19 -0.69394682  3.258159e-09
+## 20 -0.63451950 -5.529394e-10
+## 21  1.87521347 -1.524100e-09
+## 22 -1.50389226  1.641151e-10
+## 23  1.78044856 -5.773276e-09
+## 24  0.17909278  6.855145e-11
+## 25  1.39501625  1.648564e-09
+## 26 -1.78177645 -4.237651e-10
+## 27 -0.08529162  9.307610e-12
+## 28 -1.97456015  6.096326e-09
+## 29 -0.94328552 -1.712393e-09
+## 30  0.20095069 -8.624070e-11
+## 31 -0.13355239 -7.450480e-11
+## 32  2.70958201  4.069221e-09
+## 33  1.27133656  1.913396e-09
+## 34 -0.89252671 -2.122723e-10
+## 35 -0.35287129 -5.310809e-10
+## 36 -0.59671918 -1.646509e-09
+## 37 -2.18153661 -3.269144e-09
+## 38  1.09443772  2.602933e-10
+## 39  0.72371535  1.316140e-09
+## 40  0.37463919 -1.758973e-09
+## 41  1.67672441  1.167555e-09
+## 42 -1.01339149 -5.282123e-10
+## 44  0.84611504  5.891763e-10
+## 45  2.29931998  2.003697e-09
+## 46  0.07315518 -1.309536e-10
+## 47 -3.15737613 -2.198579e-09
+## 48 -2.67912474  3.017555e-09
+## 49 -0.57052531 -1.216445e-09
+## 50 -0.39149904 -3.280883e-10
+## 51 -0.60100189  1.559923e-09
+## 53  0.41503195 -4.663502e-11
+## 54 -1.20583697  5.980493e-10
+## 55  1.19028491  2.830890e-10
+## 
+## with conditional variances for &quot;st_fip&quot;</code></pre>
+<p>We can also get confidence interals for the fixed effects using confint()</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">confint</span>(fixed_random)</code></pre></div>
+<pre><code>## Computing profile confidence intervals ...</code></pre>
+<pre><code>##                  2.5 %    97.5 %
+## .sig01       1.0590439  3.162650
+## .sig02       0.0000000  1.802257
+## .sigma       8.2414661  9.095810
+## (Intercept) 13.3612218 15.205404
+## phase1       0.0835454  1.893044</code></pre>
+<p>Using the broom.mixed package, you can use the <code>tidy()</code> function to extract model results, though this isn’t as tidy as most models are:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(broom)
+
+<span class="kw">tidy</span>(fixed_random, <span class="dt">conf.int =</span> <span class="ot">TRUE</span>)</code></pre></div>
+<pre><code>## Warning in bind_rows_(x, .id): binding factor and character vector,
+## coercing into character vector</code></pre>
+<pre><code>## Warning in bind_rows_(x, .id): binding character and factor vector,
+## coercing into character vector</code></pre>
+<pre><code>## # A tibble: 5 x 7
+##   term               estimate std.error statistic conf.low conf.high group 
+##   &lt;chr&gt;                 &lt;dbl&gt;     &lt;dbl&gt;     &lt;dbl&gt;    &lt;dbl&gt;     &lt;dbl&gt; &lt;chr&gt; 
+## 1 (Intercept)      14.3           0.467     30.5   13.4        15.2  fixed 
+## 2 phase1            0.943         0.442      2.13   0.0761      1.81 fixed 
+## 3 sd_(Intercept).~  2.16         NA         NA     NA          NA    st_fip
+## 4 sd_phase1.st_fi~  0.0000937    NA         NA     NA          NA    st_fi~
+## 5 sd_Observation.~  8.65         NA         NA     NA          NA    Resid~</code></pre>
+<div id="communicating-results" class="section level2">
+<h2><span class="header-section-number">9.1</span> Communicating results</h2>
+<p>This is not very easy to extract lmer results (see <a href="https://github.com/tidymodels/broom/issues/96">link</a>).</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Extract out the parameter estimates and confidence intervals and manipulate the data</span>
+dataPlot &lt;-<span class="st"> </span><span class="kw">data.frame</span>(<span class="kw">cbind</span>( <span class="kw">fixef</span>(fixed_random), <span class="kw">confint</span>(fixed_random)[ <span class="dv">4</span><span class="op">:</span><span class="dv">5</span>, ])) <span class="co"># getting the rows for confint</span></code></pre></div>
+<pre><code>## Computing profile confidence intervals ...</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">rownames</span>(dataPlot)[<span class="dv">1</span>] &lt;-<span class="st"> &quot;Intercept&quot;</span>
+<span class="kw">colnames</span>(dataPlot) &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="st">&quot;est&quot;</span>, <span class="st">&quot;L95&quot;</span>, <span class="st">&quot;U95&quot;</span>)
+dataPlot<span class="op">$</span>parameter &lt;-<span class="st"> </span><span class="kw">rownames</span>(dataPlot)
+
+<span class="co"># Print the new dataframe</span>
+<span class="kw">print</span>(dataPlot)</code></pre></div>
+<pre><code>##                  est        L95       U95 parameter
+## Intercept 14.2695219 13.3612218 15.205404 Intercept
+## phase1     0.9433342  0.0835454  1.893044    phase1</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Plot the results using ggplot2</span>
+<span class="kw">ggplot</span>(dataPlot, <span class="kw">aes</span>(<span class="dt">x =</span> parameter, <span class="dt">y =</span> est, <span class="dt">ymin =</span> L95, <span class="dt">ymax =</span> U95)) <span class="op">+</span>
+<span class="st">  </span><span class="kw">geom_hline</span>( <span class="dt">yintercept =</span> <span class="dv">0</span>, <span class="dt">color =</span> <span class="st">&#39;red&#39;</span> ) <span class="op">+</span>
+<span class="st">  </span><span class="kw">geom_linerange</span>() <span class="op">+</span><span class="st"> </span>
+<span class="st">  </span><span class="kw">geom_point</span>() <span class="op">+</span><span class="st"> </span>
+<span class="st">  </span><span class="kw">coord_flip</span>() <span class="op">+</span><span class="st"> </span>
+<span class="st">  </span><span class="kw">theme_minimal</span>()</code></pre></div>
+<p><img src="Bookdown_files/figure-html/unnamed-chunk-40-1.png" width="672" /></p>
+<p>It is important that in many instances, rescaling might have to occur to make the model numerically viable (for instance, changing the year in our study to be 0 instead of the actual year).</p>
+</div>
+</div>
+            </section>
+
+          </div>
+        </div>
+      </div>
+<a href="multi-level-models.html" class="navigation navigation-prev " aria-label="Previous page"><i class="fa fa-angle-left"></i></a>
+<a href="model-comaprison-with-anova.html" class="navigation navigation-next " aria-label="Next page"><i class="fa fa-angle-right"></i></a>
+    </div>
+  </div>
+<script src="libs/gitbook-2.6.7/js/app.min.js"></script>
+<script src="libs/gitbook-2.6.7/js/lunr.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-search.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-sharing.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-fontsettings.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-bookdown.js"></script>
+<script src="libs/gitbook-2.6.7/js/jquery.highlight.js"></script>
+<script>
+gitbook.require(["gitbook"], function(gitbook) {
+gitbook.start({
+"sharing": {
+"github": false,
+"facebook": true,
+"twitter": true,
+"google": false,
+"linkedin": false,
+"weibo": false,
+"instapaper": false,
+"vk": false,
+"all": ["facebook", "google", "twitter", "linkedin", "weibo", "instapaper"]
+},
+"fontsettings": {
+"theme": "white",
+"family": "sans",
+"size": 2
+},
+"edit": {
+"link": null,
+"text": null
+},
+"history": {
+"link": null,
+"text": null
+},
+"download": ["Bookdown.pdf", "Bookdown.epub"],
+"toc": {
+"collapse": "subsection"
+}
+});
+});
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    var src = "";
+    if (src === "" || src === "true") src = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-MML-AM_CHTML";
+    if (location.protocol !== "file:" && /^https?:/.test(src))
+      src = src.replace(/^https?:/, '');
+    script.src = src;
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+</body>
+
+</html>

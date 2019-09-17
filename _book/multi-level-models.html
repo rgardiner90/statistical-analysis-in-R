@@ -1,0 +1,970 @@
+<!DOCTYPE html>
+<html >
+
+<head>
+
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <title>Chapter 6 Multi Level Models | Legal Education Analysis in R</title>
+  <meta name="description" content="This is a minimal example of using the bookdown package to write a book. The output format for this example is bookdown::gitbook.">
+  <meta name="generator" content="bookdown  and GitBook 2.6.7">
+
+  <meta property="og:title" content="Chapter 6 Multi Level Models | Legal Education Analysis in R" />
+  <meta property="og:type" content="book" />
+  
+  
+  <meta property="og:description" content="This is a minimal example of using the bookdown package to write a book. The output format for this example is bookdown::gitbook." />
+  
+
+  <meta name="twitter:card" content="summary" />
+  <meta name="twitter:title" content="Chapter 6 Multi Level Models | Legal Education Analysis in R" />
+  
+  <meta name="twitter:description" content="This is a minimal example of using the bookdown package to write a book. The output format for this example is bookdown::gitbook." />
+  
+
+<meta name="author" content="Richard G. Gardiner">
+
+
+<meta name="date" content="2019-05-15">
+
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  
+  
+<link rel="prev" href="ordered-logit-models.html">
+<link rel="next" href="count-data.html">
+<script src="libs/jquery-2.2.3/jquery.min.js"></script>
+<link href="libs/gitbook-2.6.7/css/style.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-table.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-bookdown.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-highlight.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-search.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-fontsettings.css" rel="stylesheet" />
+
+
+
+
+
+
+
+
+
+<style type="text/css">
+div.sourceCode { overflow-x: auto; }
+table.sourceCode, tr.sourceCode, td.lineNumbers, td.sourceCode {
+  margin: 0; padding: 0; vertical-align: baseline; border: none; }
+table.sourceCode { width: 100%; line-height: 100%; }
+td.lineNumbers { text-align: right; padding-right: 4px; padding-left: 4px; color: #aaaaaa; border-right: 1px solid #aaaaaa; }
+td.sourceCode { padding-left: 5px; }
+code > span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code > span.dt { color: #902000; } /* DataType */
+code > span.dv { color: #40a070; } /* DecVal */
+code > span.bn { color: #40a070; } /* BaseN */
+code > span.fl { color: #40a070; } /* Float */
+code > span.ch { color: #4070a0; } /* Char */
+code > span.st { color: #4070a0; } /* String */
+code > span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code > span.ot { color: #007020; } /* Other */
+code > span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code > span.fu { color: #06287e; } /* Function */
+code > span.er { color: #ff0000; font-weight: bold; } /* Error */
+code > span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+code > span.cn { color: #880000; } /* Constant */
+code > span.sc { color: #4070a0; } /* SpecialChar */
+code > span.vs { color: #4070a0; } /* VerbatimString */
+code > span.ss { color: #bb6688; } /* SpecialString */
+code > span.im { } /* Import */
+code > span.va { color: #19177c; } /* Variable */
+code > span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code > span.op { color: #666666; } /* Operator */
+code > span.bu { } /* BuiltIn */
+code > span.ex { } /* Extension */
+code > span.pp { color: #bc7a00; } /* Preprocessor */
+code > span.at { color: #7d9029; } /* Attribute */
+code > span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code > span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code > span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+</style>
+
+<link rel="stylesheet" href="style.css" type="text/css" />
+</head>
+
+<body>
+
+
+
+  <div class="book without-animation with-summary font-size-2 font-family-1" data-basepath=".">
+
+    <div class="book-summary">
+      <nav role="navigation">
+
+<ul class="summary">
+<li><a href="./">A Minimal Book Example</a></li>
+
+<li class="divider"></li>
+<li class="chapter" data-level="1" data-path="index.html"><a href="index.html"><i class="fa fa-check"></i><b>1</b> About the Book</a></li>
+<li class="chapter" data-level="2" data-path="intro.html"><a href="intro.html"><i class="fa fa-check"></i><b>2</b> Introduction</a></li>
+<li class="chapter" data-level="3" data-path="ols.html"><a href="ols.html"><i class="fa fa-check"></i><b>3</b> OLS</a><ul>
+<li class="chapter" data-level="3.1" data-path="ols.html"><a href="ols.html#intuition"><i class="fa fa-check"></i><b>3.1</b> Intuition</a></li>
+<li class="chapter" data-level="3.2" data-path="ols.html"><a href="ols.html#running-your-first-regression"><i class="fa fa-check"></i><b>3.2</b> Running your first regression</a></li>
+<li class="chapter" data-level="3.3" data-path="ols.html"><a href="ols.html#advancing-to-multiple-regression"><i class="fa fa-check"></i><b>3.3</b> Advancing to Multiple Regression</a></li>
+<li class="chapter" data-level="3.4" data-path="ols.html"><a href="ols.html#checking-assumptions"><i class="fa fa-check"></i><b>3.4</b> Checking Assumptions</a><ul>
+<li class="chapter" data-level="3.4.1" data-path="ols.html"><a href="ols.html#normality"><i class="fa fa-check"></i><b>3.4.1</b> Normality</a></li>
+<li class="chapter" data-level="3.4.2" data-path="ols.html"><a href="ols.html#heteroskedasticity"><i class="fa fa-check"></i><b>3.4.2</b> Heteroskedasticity</a></li>
+<li class="chapter" data-level="3.4.3" data-path="ols.html"><a href="ols.html#multicollinearity"><i class="fa fa-check"></i><b>3.4.3</b> Multicollinearity</a></li>
+<li class="chapter" data-level="3.4.4" data-path="ols.html"><a href="ols.html#outliers-and-leverage"><i class="fa fa-check"></i><b>3.4.4</b> Outliers and leverage</a></li>
+<li class="chapter" data-level="3.4.5" data-path="ols.html"><a href="ols.html#autocorrelation"><i class="fa fa-check"></i><b>3.4.5</b> Autocorrelation</a></li>
+<li class="chapter" data-level="3.4.6" data-path="ols.html"><a href="ols.html#residual-analysis"><i class="fa fa-check"></i><b>3.4.6</b> Residual Analysis</a></li>
+</ul></li>
+<li class="chapter" data-level="3.5" data-path="ols.html"><a href="ols.html#displaying-results"><i class="fa fa-check"></i><b>3.5</b> Displaying Results</a><ul>
+<li class="chapter" data-level="3.5.1" data-path="ols.html"><a href="ols.html#tables"><i class="fa fa-check"></i><b>3.5.1</b> Tables</a></li>
+<li class="chapter" data-level="3.5.2" data-path="ols.html"><a href="ols.html#coefplots"><i class="fa fa-check"></i><b>3.5.2</b> Coefplots</a></li>
+<li class="chapter" data-level="3.5.3" data-path="ols.html"><a href="ols.html#graphing-predictions"><i class="fa fa-check"></i><b>3.5.3</b> Graphing predictions</a></li>
+</ul></li>
+</ul></li>
+<li class="chapter" data-level="4" data-path="logit-models.html"><a href="logit-models.html"><i class="fa fa-check"></i><b>4</b> Logit Models</a><ul>
+<li class="chapter" data-level="4.1" data-path="logit-models.html"><a href="logit-models.html#introducing-logit-models"><i class="fa fa-check"></i><b>4.1</b> Introducing Logit Models</a></li>
+<li class="chapter" data-level="4.2" data-path="logit-models.html"><a href="logit-models.html#example-of-logit-model"><i class="fa fa-check"></i><b>4.2</b> Example of Logit Model</a></li>
+<li class="chapter" data-level="4.3" data-path="logit-models.html"><a href="logit-models.html#adding-predictions"><i class="fa fa-check"></i><b>4.3</b> Adding Predictions</a></li>
+<li class="chapter" data-level="4.4" data-path="logit-models.html"><a href="logit-models.html#how-did-our-model-do"><i class="fa fa-check"></i><b>4.4</b> How did our model do?</a></li>
+<li class="chapter" data-level="4.5" data-path="logit-models.html"><a href="logit-models.html#final-words"><i class="fa fa-check"></i><b>4.5</b> Final Words</a></li>
+</ul></li>
+<li class="chapter" data-level="5" data-path="ordered-logit-models.html"><a href="ordered-logit-models.html"><i class="fa fa-check"></i><b>5</b> Ordered Logit Models</a><ul>
+<li class="chapter" data-level="5.1" data-path="ordered-logit-models.html"><a href="ordered-logit-models.html#data-and-packages"><i class="fa fa-check"></i><b>5.1</b> Data and Packages</a></li>
+<li class="chapter" data-level="5.2" data-path="ordered-logit-models.html"><a href="ordered-logit-models.html#running-the-model"><i class="fa fa-check"></i><b>5.2</b> Running the Model</a></li>
+<li class="chapter" data-level="5.3" data-path="ordered-logit-models.html"><a href="ordered-logit-models.html#gettin-predictions"><i class="fa fa-check"></i><b>5.3</b> Gettin predictions:</a></li>
+<li class="chapter" data-level="5.4" data-path="ordered-logit-models.html"><a href="ordered-logit-models.html#showing-predictions"><i class="fa fa-check"></i><b>5.4</b> Showing predictions</a></li>
+<li class="chapter" data-level="5.5" data-path="ordered-logit-models.html"><a href="ordered-logit-models.html#graphing-in-a-tidy-way"><i class="fa fa-check"></i><b>5.5</b> Graphing in a Tidy Way</a></li>
+</ul></li>
+<li class="chapter" data-level="6" data-path="multi-level-models.html"><a href="multi-level-models.html"><i class="fa fa-check"></i><b>6</b> Multi Level Models</a><ul>
+<li class="chapter" data-level="6.1" data-path="multi-level-models.html"><a href="multi-level-models.html#introduction"><i class="fa fa-check"></i><b>6.1</b> Introduction</a><ul>
+<li class="chapter" data-level="6.1.1" data-path="multi-level-models.html"><a href="multi-level-models.html#full-model"><i class="fa fa-check"></i><b>6.1.1</b> full model</a></li>
+<li class="chapter" data-level="6.1.2" data-path="multi-level-models.html"><a href="multi-level-models.html#building-the-model"><i class="fa fa-check"></i><b>6.1.2</b> building the model</a></li>
+<li class="chapter" data-level="6.1.3" data-path="multi-level-models.html"><a href="multi-level-models.html#understanding-and-reporting-the-outputs"><i class="fa fa-check"></i><b>6.1.3</b> Understanding and reporting the outputs</a></li>
+<li class="chapter" data-level="6.1.4" data-path="multi-level-models.html"><a href="multi-level-models.html#communicating-results"><i class="fa fa-check"></i><b>6.1.4</b> Communicating results</a></li>
+<li class="chapter" data-level="6.1.5" data-path="multi-level-models.html"><a href="multi-level-models.html#model-comparison-with-anova"><i class="fa fa-check"></i><b>6.1.5</b> Model comparison with Anova</a></li>
+</ul></li>
+<li class="chapter" data-level="6.2" data-path="multi-level-models.html"><a href="multi-level-models.html#glms"><i class="fa fa-check"></i><b>6.2</b> GLMs</a><ul>
+<li class="chapter" data-level="6.2.1" data-path="multi-level-models.html"><a href="multi-level-models.html#binomial-data"><i class="fa fa-check"></i><b>6.2.1</b> Binomial Data</a></li>
+<li class="chapter" data-level="6.2.2" data-path="multi-level-models.html"><a href="multi-level-models.html#count-models"><i class="fa fa-check"></i><b>6.2.2</b> Count models</a></li>
+</ul></li>
+<li class="chapter" data-level="6.3" data-path="multi-level-models.html"><a href="multi-level-models.html#repeated-measures"><i class="fa fa-check"></i><b>6.3</b> Repeated Measures</a><ul>
+<li class="chapter" data-level="6.3.1" data-path="multi-level-models.html"><a href="multi-level-models.html#paired-t-test"><i class="fa fa-check"></i><b>6.3.1</b> Paired T-test</a></li>
+<li class="chapter" data-level="6.3.2" data-path="multi-level-models.html"><a href="multi-level-models.html#repeated-measures-anova"><i class="fa fa-check"></i><b>6.3.2</b> Repeated Measures ANOVA</a></li>
+<li class="chapter" data-level="6.3.3" data-path="multi-level-models.html"><a href="multi-level-models.html#example-ny-hate-crime-data"><i class="fa fa-check"></i><b>6.3.3</b> Example: NY Hate Crime Data</a></li>
+</ul></li>
+</ul></li>
+<li class="chapter" data-level="7" data-path="count-data.html"><a href="count-data.html"><i class="fa fa-check"></i><b>7</b> Count Data</a></li>
+<li class="chapter" data-level="8" data-path="lets-fit-the-first-one.html"><a href="lets-fit-the-first-one.html"><i class="fa fa-check"></i><b>8</b> let’s fit the first one:</a></li>
+<li class="divider"></li>
+<li><a href="https://github.com/rstudio/bookdown" target="blank">Published with bookdown</a></li>
+
+</ul>
+
+      </nav>
+    </div>
+
+    <div class="book-body">
+      <div class="body-inner">
+        <div class="book-header" role="navigation">
+          <h1>
+            <i class="fa fa-circle-o-notch fa-spin"></i><a href="./">Legal Education Analysis in R</a>
+          </h1>
+        </div>
+
+        <div class="page-wrapper" tabindex="-1" role="main">
+          <div class="page-inner">
+
+            <section class="normal" id="section-">
+<div id="multi-level-models" class="section level1">
+<h1><span class="header-section-number">Chapter 6</span> Multi Level Models</h1>
+<div id="introduction" class="section level2">
+<h2><span class="header-section-number">6.1</span> Introduction</h2>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(lme4)</code></pre></div>
+<pre><code>## Warning: package &#39;lme4&#39; was built under R version 3.5.2</code></pre>
+<pre><code>## Loading required package: Matrix</code></pre>
+<pre><code>## 
+## Attaching package: &#39;Matrix&#39;</code></pre>
+<pre><code>## The following object is masked from &#39;package:tidyr&#39;:
+## 
+##     expand</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(foreign)
+<span class="kw">library</span>(broom)
+<span class="kw">library</span>(tidyverse)</code></pre></div>
+<p><em>Fixed-effect</em> parameters only use data for a specific group. In contrast, <em>random-effect</em> parameters assume data share a common distribution. FOr situations with small amounts of data or ourliers, random effect models can produce different estimates.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">evolution&lt;-<span class="kw">read.dta</span>(<span class="st">&quot;http://j.mp/BPchap7&quot;</span>)
+evolution<span class="op">$</span>female[evolution<span class="op">$</span>female<span class="op">==</span><span class="dv">9</span>]&lt;-<span class="ot">NA</span>
+evolution&lt;-<span class="kw">subset</span>(evolution,<span class="op">!</span><span class="kw">is.na</span>(female))</code></pre></div>
+<div id="full-model" class="section level3">
+<h3><span class="header-section-number">6.1.1</span> full model</h3>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">hours_ml&lt;-<span class="kw">lmer</span>(hrs_allev <span class="op">~</span><span class="st"> </span>phase1 <span class="op">+</span><span class="st"> </span>senior_c <span class="op">+</span><span class="st"> </span>ph_senior <span class="op">+</span><span class="st"> </span>notest_p <span class="op">+</span><span class="st"> </span>ph_notest_p <span class="op">+</span><span class="st"> </span>female <span class="op">+</span><span class="st"> </span>biocred3 <span class="op">+</span><span class="st"> </span>
+<span class="st">                 </span>degr3 <span class="op">+</span><span class="st"> </span>evol_course <span class="op">+</span><span class="st"> </span>certified <span class="op">+</span><span class="st"> </span>idsci_trans <span class="op">+</span><span class="st"> </span>confident <span class="op">+</span><span class="st"> </span>(<span class="dv">1</span><span class="op">|</span>st_fip), <span class="dt">data =</span> evolution)</code></pre></div>
+</div>
+<div id="building-the-model" class="section level3">
+<h3><span class="header-section-number">6.1.2</span> building the model</h3>
+<p>Here we are building a random effects with no fixed effects:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">initial &lt;-<span class="st"> </span><span class="kw">lmer</span>(hrs_allev <span class="op">~</span><span class="st"> </span>(<span class="dv">1</span> <span class="op">|</span><span class="st"> </span>st_fip), <span class="dt">data =</span> evolution)
+
+<span class="kw">summary</span>(initial)</code></pre></div>
+<pre><code>## Linear mixed model fit by REML [&#39;lmerMod&#39;]
+## Formula: hrs_allev ~ (1 | st_fip)
+##    Data: evolution
+## 
+## REML criterion at convergence: 6049
+## 
+## Scaled residuals: 
+##     Min      1Q  Median      3Q     Max 
+## -1.6954 -0.7003 -0.2460  0.6036  3.5975 
+## 
+## Random effects:
+##  Groups   Name        Variance Std.Dev.
+##  st_fip   (Intercept)  5.046   2.246   
+##  Residual             74.952   8.657   
+## Number of obs: 841, groups:  st_fip, 49
+## 
+## Fixed effects:
+##             Estimate Std. Error t value
+## (Intercept)   14.222      0.477   29.82</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">plot</span>(initial)</code></pre></div>
+<p><img src="Bookdown_files/figure-html/unnamed-chunk-52-1.png" width="672" /></p>
+<p>Now let’s build one with a fixed-effect slope parameter:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">fixed &lt;-<span class="st"> </span><span class="kw">lmer</span>(hrs_allev <span class="op">~</span><span class="st"> </span>phase1 <span class="op">+</span><span class="st"> </span>(<span class="dv">1</span> <span class="op">|</span><span class="st"> </span>st_fip), <span class="dt">data =</span> evolution)
+
+<span class="kw">summary</span>(fixed)</code></pre></div>
+<pre><code>## Linear mixed model fit by REML [&#39;lmerMod&#39;]
+## Formula: hrs_allev ~ phase1 + (1 | st_fip)
+##    Data: evolution
+## 
+## REML criterion at convergence: 6044.3
+## 
+## Scaled residuals: 
+##     Min      1Q  Median      3Q     Max 
+## -1.7107 -0.6892 -0.2430  0.6116  3.6573 
+## 
+## Random effects:
+##  Groups   Name        Variance Std.Dev.
+##  st_fip   (Intercept)  4.65    2.156   
+##  Residual             74.79    8.648   
+## Number of obs: 841, groups:  st_fip, 49
+## 
+## Fixed effects:
+##             Estimate Std. Error t value
+## (Intercept)  14.2695     0.4672  30.541
+## phase1        0.9433     0.4425   2.132
+## 
+## Correlation of Fixed Effects:
+##        (Intr)
+## phase1 0.058</code></pre>
+<p>Now to add a random slope:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">random_slopes &lt;-<span class="st"> </span><span class="kw">lmer</span>(hrs_allev <span class="op">~</span><span class="st"> </span>phase1 <span class="op">+</span><span class="st"> </span>(notest_p <span class="op">|</span><span class="st"> </span>st_fip), <span class="dt">data =</span> evolution)
+
+broom<span class="op">::</span><span class="kw">tidy</span>(random_slopes)</code></pre></div>
+<pre><code>## Warning in bind_rows_(x, .id): binding factor and character vector,
+## coercing into character vector</code></pre>
+<pre><code>## Warning in bind_rows_(x, .id): binding character and factor vector,
+## coercing into character vector</code></pre>
+<pre><code>## # A tibble: 6 x 5
+##   term                            estimate std.error statistic group   
+##   &lt;chr&gt;                              &lt;dbl&gt;     &lt;dbl&gt;     &lt;dbl&gt; &lt;chr&gt;   
+## 1 (Intercept)                       14.3       0.458     31.2  fixed   
+## 2 phase1                             0.829     0.424      1.96 fixed   
+## 3 sd_(Intercept).st_fip              2.34     NA         NA    st_fip  
+## 4 sd_notest_p.st_fip                 0.924    NA         NA    st_fip  
+## 5 cor_(Intercept).notest_p.st_fip   -1.000    NA         NA    st_fip  
+## 6 sd_Observation.Residual            8.65     NA         NA    Residual</code></pre>
+<p>If we wanted to assume uncorrelated random-effect slopes (it is actually easier to calculate) all we have to do is turn <code>|</code> into <code>||</code> (though you likely want a reason to do this, I am just doing here for instruction)</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">uncor &lt;-<span class="st"> </span><span class="kw">lmer</span>(hrs_allev <span class="op">~</span><span class="st"> </span>phase1 <span class="op">+</span><span class="st"> </span>(notest_p <span class="op">||</span><span class="st"> </span>st_fip), <span class="dt">data =</span> evolution)</code></pre></div>
+<pre><code>## singular fit</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">summary</span>(uncor)</code></pre></div>
+<pre><code>## Linear mixed model fit by REML [&#39;lmerMod&#39;]
+## Formula: hrs_allev ~ phase1 + ((1 | st_fip) + (0 + notest_p | st_fip))
+##    Data: evolution
+## 
+## REML criterion at convergence: 6044.3
+## 
+## Scaled residuals: 
+##     Min      1Q  Median      3Q     Max 
+## -1.7107 -0.6892 -0.2430  0.6116  3.6573 
+## 
+## Random effects:
+##  Groups   Name        Variance Std.Dev.
+##  st_fip   (Intercept)  4.65    2.156   
+##  st_fip.1 notest_p     0.00    0.000   
+##  Residual             74.79    8.648   
+## Number of obs: 841, groups:  st_fip, 49
+## 
+## Fixed effects:
+##             Estimate Std. Error t value
+## (Intercept)  14.2695     0.4672  30.541
+## phase1        0.9433     0.4425   2.132
+## 
+## Correlation of Fixed Effects:
+##        (Intr)
+## phase1 0.058 
+## convergence code: 0
+## singular fit</code></pre>
+<p>You can also have a variable as a fixed effect while correcting for random slopes:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># fixed_random &lt;- lmer(hrs_allev ~ phase1 + (phase1 || st_fip), data = evolution)</span>
+<span class="co"># </span>
+<span class="co"># summary(fixed_random)</span></code></pre></div>
+</div>
+<div id="understanding-and-reporting-the-outputs" class="section level3">
+<h3><span class="header-section-number">6.1.3</span> Understanding and reporting the outputs</h3>
+<p>Point estimates</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># fixef(fixed_random)</span></code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># ranef(fixed_random)</span></code></pre></div>
+<p>We can also get confidence interals for the fixed effects using confint()</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># confint(fixed_random)</span></code></pre></div>
+<p>Using the broom.mixed package, you can use the <code>tidy()</code> function to extract model results, though this isn’t as tidy as most models are:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(broom)
+
+<span class="co"># tidy(fixed_random, conf.int = TRUE)</span></code></pre></div>
+</div>
+<div id="communicating-results" class="section level3">
+<h3><span class="header-section-number">6.1.4</span> Communicating results</h3>
+<p>This is not very easy to extract lmer results (see <a href="https://github.com/tidymodels/broom/issues/96">link</a>).</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># # Extract out the parameter estimates and confidence intervals and manipulate the data</span>
+<span class="co"># dataPlot &lt;- data.frame(cbind( fixef(fixed_random), confint(fixed_random)[ 4:5, ])) # getting the rows for confint</span>
+<span class="co"># rownames(dataPlot)[1] &lt;- &quot;Intercept&quot;</span>
+<span class="co"># colnames(dataPlot) &lt;- c(&quot;est&quot;, &quot;L95&quot;, &quot;U95&quot;)</span>
+<span class="co"># dataPlot$parameter &lt;- rownames(dataPlot)</span>
+<span class="co"># </span>
+<span class="co"># # Print the new dataframe</span>
+<span class="co"># print(dataPlot)</span>
+<span class="co"># </span>
+<span class="co"># # Plot the results using ggplot2</span>
+<span class="co"># ggplot(dataPlot, aes(x = parameter, y = est, ymin = L95, ymax = U95)) +</span>
+<span class="co">#   geom_hline( yintercept = 0, color = &#39;red&#39; ) +</span>
+<span class="co">#   geom_linerange() + </span>
+<span class="co">#   geom_point() + </span>
+<span class="co">#   coord_flip() + </span>
+<span class="co">#   theme_minimal()</span></code></pre></div>
+<p>It is important that in many instances, rescaling might have to occur to make the model numerically viable (for instance, changing the year in our study to be 0 instead of the actual year).</p>
+</div>
+<div id="model-comparison-with-anova" class="section level3">
+<h3><span class="header-section-number">6.1.5</span> Model comparison with Anova</h3>
+<p>What happens if we include more variables or model it differently? Well we can use anove to determine which model is better:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># anova(random_slopes, fixed_random)</span></code></pre></div>
+<p>In this instance the fixed_random does a better job, but is not significantly better.</p>
+</div>
+</div>
+<div id="glms" class="section level2">
+<h2><span class="header-section-number">6.2</span> GLMs</h2>
+<div id="binomial-data" class="section level3">
+<h3><span class="header-section-number">6.2.1</span> Binomial Data</h3>
+<p>code: glmer(y ~ x + (1 | group), family = ‘error term’)</p>
+<p>Here we are using the Bang dataset which is a survey of contraception use for women in Bangladesh. The variables we are using for the model is whether they used the contraception (<code>user</code>), then the number of living children they had (<code>living.children</code>), the age centered around the mean (<code>age_mean</code>), and whether they lived in an urban or rural area (<code>urban</code>). The random intercept in this case is the <code>district</code> where they reside.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(epiDisplay)</code></pre></div>
+<pre><code>## Warning: package &#39;epiDisplay&#39; was built under R version 3.5.3</code></pre>
+<pre><code>## Loading required package: survival</code></pre>
+<pre><code>## Loading required package: nnet</code></pre>
+<pre><code>## 
+## Attaching package: &#39;epiDisplay&#39;</code></pre>
+<pre><code>## The following object is masked from &#39;package:lmtest&#39;:
+## 
+##     lrtest</code></pre>
+<pre><code>## The following object is masked from &#39;package:scales&#39;:
+## 
+##     alpha</code></pre>
+<pre><code>## The following object is masked from &#39;package:ggplot2&#39;:
+## 
+##     alpha</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">data</span>(Bang)
+
+cont_model &lt;-<span class="st"> </span><span class="kw">glmer</span>(user <span class="op">~</span><span class="st"> </span>living.children <span class="op">+</span><span class="st"> </span>age_mean <span class="op">+</span><span class="st"> </span>urban <span class="op">+</span><span class="st"> </span>(<span class="dv">1</span> <span class="op">|</span><span class="st"> </span>district),
+                    <span class="dt">family =</span> <span class="st">&quot;binomial&quot;</span>,
+                    <span class="dt">data =</span> Bang)</code></pre></div>
+<p>Now let’s look at the results</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">summary</span>(cont_model)</code></pre></div>
+<pre><code>## Generalized linear mixed model fit by maximum likelihood (Laplace
+##   Approximation) [glmerMod]
+##  Family: binomial  ( logit )
+## Formula: user ~ living.children + age_mean + urban + (1 | district)
+##    Data: Bang
+## 
+##      AIC      BIC   logLik deviance df.resid 
+##   2453.9   2481.7  -1221.9   2443.9     1929 
+## 
+## Scaled residuals: 
+##     Min      1Q  Median      3Q     Max 
+## -1.9844 -0.7621 -0.5338  1.0010  2.4039 
+## 
+## Random effects:
+##  Groups   Name        Variance Std.Dev.
+##  district (Intercept) 0.2156   0.4643  
+## Number of obs: 1934, groups:  district, 60
+## 
+## Fixed effects:
+##                  Estimate Std. Error z value Pr(&gt;|z|)    
+## (Intercept)     -1.855018   0.183266 -10.122  &lt; 2e-16 ***
+## living.children  0.421155   0.057540   7.319 2.49e-13 ***
+## age_mean        -0.030872   0.007828  -3.944 8.02e-05 ***
+## urban            0.722556   0.118302   6.108 1.01e-09 ***
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+## Correlation of Fixed Effects:
+##             (Intr) lvng.c age_mn
+## lvng.chldrn -0.876              
+## age_mean     0.606 -0.704       
+## urban       -0.254  0.097 -0.051</code></pre>
+<p>Everything is significant, and pretty much what we would expect. The more kids, the more likely you are to use it, The older you are, the less likely you are. And women in urban areas use them more. The coefficients however, are difficult to read becasue they are in log-dds. We can change this to odds ratios by taking the exponent. Here is a short explanation of odds-ratios:</p>
+<ul>
+<li>If an odds-ratio is 1.0, then both events have an equal chance of occurring. For example, if the odds-ratio for a urban was 1.0, then living in an urban/rural area would have no influence on contraception use.</li>
+<li>If an odds-ratio is less than 1, then living in an urban area would decrease the chance of using contraception. For example, an odds-ratio of 0.5 would mean a those living in urban areas have odds of 1:2 or 1 woman using contraception for every 2 women in rural areas.</li>
+<li>If an odds-ratio is greater than 1, then living in an urban area would increase the chance of contraception use. For example, an odds-ratio of 3.0 would mean living in an urban area has odds of 3:1 or 3 women using contraception in an urban area compared to those in rural areas.</li>
+</ul>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># calculating odds ratios and the confidence intervals for them</span>
+<span class="kw">exp</span>(<span class="kw">fixef</span>(cont_model))</code></pre></div>
+<pre><code>##     (Intercept) living.children        age_mean           urban 
+##       0.1564501       1.5237206       0.9696001       2.0596918</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">exp</span>(<span class="kw">confint</span>(cont_model))</code></pre></div>
+<pre><code>## Computing profile confidence intervals ...</code></pre>
+<pre><code>##                     2.5 %    97.5 %
+## .sig01          1.3870276 1.8949934
+## (Intercept)     0.1085024 0.2229839
+## living.children 1.3624164 1.7076706
+## age_mean        0.9546908 0.9844856
+## urban           1.6334721 2.5982986</code></pre>
+</div>
+<div id="count-models" class="section level3">
+<h3><span class="header-section-number">6.2.2</span> Count models</h3>
+<p>pretty simple change in formula: <code>glmer(y ~ x + (1 | group), family = 'poisson')</code></p>
+<p>Here we are using data about chlamydia given by the state of illinois. We basically want to see if things are getting better over time, and whether age groups have this problem at different rates.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">chlamydia &lt;-<span class="st"> </span><span class="kw">read_csv</span>(<span class="st">&quot;https://assets.datacamp.com/production/repositories/1803/datasets/612bd6490500636efa74132bfbc37817f250cb5a/ILdata.csv&quot;</span>)</code></pre></div>
+<pre><code>## Parsed with column specification:
+## cols(
+##   age = col_character(),
+##   year = col_double(),
+##   county = col_character(),
+##   count = col_double()
+## )</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">count_chlamydia &lt;-<span class="st"> </span><span class="kw">glmer</span>(count <span class="op">~</span><span class="st"> </span>age <span class="op">+</span><span class="st"> </span>year <span class="op">+</span><span class="st"> </span>(year <span class="op">|</span><span class="st"> </span>county), <span class="dt">family =</span> <span class="st">&quot;poisson&quot;</span>,
+                         <span class="dt">data =</span> chlamydia)</code></pre></div>
+<pre><code>## Warning in checkConv(attr(opt, &quot;derivs&quot;), opt$par, ctrl =
+## control$checkConv, : Model failed to converge with max|grad| = 0.00144074
+## (tol = 0.001, component 1)</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">summary</span>(count_chlamydia)</code></pre></div>
+<pre><code>## Generalized linear mixed model fit by maximum likelihood (Laplace
+##   Approximation) [glmerMod]
+##  Family: poisson  ( log )
+## Formula: count ~ age + year + (year | county)
+##    Data: chlamydia
+## 
+##      AIC      BIC   logLik deviance df.resid 
+##   3215.6   3259.6  -1599.8   3199.6     1800 
+## 
+## Scaled residuals: 
+##     Min      1Q  Median      3Q     Max 
+## -2.4511 -0.0151 -0.0056 -0.0022  4.0053 
+## 
+## Random effects:
+##  Groups Name        Variance Std.Dev. Corr 
+##  county (Intercept) 129.9459 11.3994       
+##         year          0.0648  0.2546  -1.00
+## Number of obs: 1808, groups:  county, 47
+## 
+## Fixed effects:
+##              Estimate Std. Error z value Pr(&gt;|z|)    
+## (Intercept) -10.76258    2.13022  -5.052 4.36e-07 ***
+## age20_24     -0.04152    0.03690  -1.125    0.261    
+## age25_29     -1.16262    0.05290 -21.976  &lt; 2e-16 ***
+## age30_34     -2.28278    0.08487 -26.898  &lt; 2e-16 ***
+## year          0.32708    0.25422   1.287    0.198    
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+## Correlation of Fixed Effects:
+##          (Intr) a20_24 a25_29 a30_34
+## age20_24 -0.008                     
+## age25_29 -0.006  0.341              
+## age30_34 -0.004  0.213  0.148       
+## year     -0.764  0.000  0.000  0.000
+## convergence code: 0
+## Model failed to converge with max|grad| = 0.00144074 (tol = 0.001, component 1)</code></pre>
+<p>So there is a difference by age group for 2 categories. Now let’s show them in a good format:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">fixef</span>(count_chlamydia)</code></pre></div>
+<pre><code>##  (Intercept)     age20_24     age25_29     age30_34         year 
+## -10.76258497  -0.04151848  -1.16262225  -2.28277972   0.32708039</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ranef</span>(count_chlamydia)</code></pre></div>
+<pre><code>## $county
+##            (Intercept)         year
+## ALEXANDER   -0.2847724  0.006331741
+## BROWN       -0.2847724  0.006331741
+## CALHOUN     -0.2847724  0.006331741
+## CARROLL     12.2418514 -0.260423999
+## CASS        -0.2847724  0.006331741
+## CLARK       12.2137668 -0.268553354
+## CLAY        -0.2847724  0.006331741
+## CRAWFORD    12.5037407 -0.265752695
+## CUMBERLAND  -0.2847724  0.006331741
+## DE WITT     12.7456078 -0.277675211
+## DOUGLAS     13.0751590 -0.306329903
+## EDGAR       12.3642794 -0.283606045
+## EDWARDS     -0.2847724  0.006331741
+## FAYETTE     12.8094530 -0.273060474
+## FORD        -0.2847724  0.006331741
+## GALLATIN    -0.2847724  0.006331741
+## GREENE      -0.2847724  0.006331741
+## HAMILTON    -0.2847724  0.006331741
+## HANCOCK     12.8581265 -0.305650287
+## HARDIN      -0.2847724  0.006331741
+## HENDERSON   -0.2847724  0.006331741
+## IROQUOIS    13.1616741 -0.311372907
+## JASPER      -0.2847724  0.006331741
+## JERSEY      12.9202747 -0.272284048
+## JO DAVIESS  12.7409389 -0.289747791
+## JOHNSON     -0.2847724  0.006331741
+## LAWRENCE    12.3713561 -0.268571236
+## MARSHALL    -0.2847724  0.006331741
+## MASON       -0.2847724  0.006331741
+## MENARD      -0.2180916  0.004849989
+## MERCER      12.7534193 -0.271678572
+## MOULTRIE    -0.2180916  0.004849989
+## PIATT       12.5653132 -0.296687752
+## PIKE        12.5310614 -0.259211299
+## POPE        -0.2180916  0.004849989
+## PULASKI     -0.2180916  0.004849989
+## PUTNAM      -0.2180916  0.004849989
+## RICHLAND    12.0350865 -0.273928951
+## SCHUYLER    -0.2180916  0.004849989
+## SCOTT       -0.2180916  0.004849989
+## SHELBY      12.5183293 -0.283472292
+## STARK       -0.2180916  0.004849989
+## UNION       13.1465272 -0.308673332
+## WABASH      -0.2180916  0.004849989
+## WASHINGTON  -0.2180916  0.004849989
+## WAYNE       12.1148896 -0.253234752
+## WHITE       -0.2180916  0.004849989
+## 
+## with conditional variances for &quot;county&quot;</code></pre>
+<p>We can plot this in a similar fashion using ggplot, though it won’t be exactly the same as the <code>glmer()</code> outputs: (UGLY)</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># fits 4 graphs with I believe 47 lines for the actual data and 47 predicted</span>
+<span class="kw">ggplot</span>(chlamydia, <span class="kw">aes</span>(<span class="dt">x =</span> year, <span class="dt">y =</span> count, <span class="dt">group =</span> county)) <span class="op">+</span>
+<span class="st">  </span><span class="kw">geom_line</span>() <span class="op">+</span>
+<span class="st">  </span><span class="kw">facet_grid</span>(age <span class="op">~</span><span class="st"> </span>.) <span class="op">+</span>
+<span class="st">  </span><span class="kw">stat_smooth</span>(<span class="dt">method =</span> <span class="st">&quot;glm&quot;</span>, <span class="dt">method.args =</span> <span class="kw">list</span>(
+    <span class="dt">family =</span> <span class="st">&quot;poisson&quot;</span>), <span class="dt">se =</span> <span class="ot">FALSE</span>, <span class="dt">alpha =</span> <span class="fl">0.5</span>) <span class="op">+</span>
+<span class="st">  </span><span class="kw">theme_minimal</span>()</code></pre></div>
+<p><img src="Bookdown_files/figure-html/unnamed-chunk-69-1.png" width="672" /></p>
+<p>I think this still works, but gives a few number of counties:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">chlamydia <span class="op">%&gt;%</span>
+<span class="st">  </span><span class="kw">filter</span>(county <span class="op">==</span><span class="st"> </span><span class="kw">sample</span>(county, <span class="dv">10</span>)) <span class="op">%&gt;%</span>
+<span class="st">  </span><span class="kw">ggplot</span>(<span class="kw">aes</span>(<span class="dt">x =</span> year, <span class="dt">y =</span> count, <span class="dt">group =</span> county)) <span class="op">+</span>
+<span class="st">  </span><span class="kw">geom_line</span>() <span class="op">+</span>
+<span class="st">  </span><span class="kw">facet_grid</span>(age <span class="op">~</span><span class="st"> </span>.) <span class="op">+</span>
+<span class="st">  </span><span class="kw">stat_smooth</span>(<span class="dt">method =</span> <span class="st">&quot;glm&quot;</span>, <span class="dt">method.args =</span> <span class="kw">list</span>(
+    <span class="dt">family =</span> <span class="st">&quot;poisson&quot;</span>), <span class="dt">se =</span> <span class="ot">FALSE</span>, <span class="dt">alpha =</span> <span class="fl">0.5</span>) <span class="op">+</span>
+<span class="st">  </span><span class="kw">theme_minimal</span>()</code></pre></div>
+<pre><code>## Warning in county == sample(county, 10): longer object length is not a
+## multiple of shorter object length</code></pre>
+<p><img src="Bookdown_files/figure-html/unnamed-chunk-70-1.png" width="672" /></p>
+</div>
+</div>
+<div id="repeated-measures" class="section level2">
+<h2><span class="header-section-number">6.3</span> Repeated Measures</h2>
+<p>They are a special case of mixed-effects models. Following individuals through time. We may do a paired, t-test. You can also do a repeated measures ANOVA from more than just 2 tests (it could be test scores for every year of score).</p>
+<p>There is no default measure for running a repeated measure ANOVA by doing:</p>
+<p><code>library(lmertest)</code> <code>anova(lmer(y ~ time + (1|individual)))</code></p>
+<p>This can also do this for lmer nad glmer. Need to add a time variable and a group variable.</p>
+<div id="paired-t-test" class="section level3">
+<h3><span class="header-section-number">6.3.1</span> Paired T-test</h3>
+<p>We are going to show this with randomly simulated data of 10 observations.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Set the seed to be 345659</span>
+<span class="kw">set.seed</span>(<span class="dv">345659</span>)
+
+
+<span class="co"># simulate before with mean of 0 and sd of 0.5</span>
+before &lt;-<span class="st"> </span><span class="kw">rnorm</span>(<span class="dv">10</span>, <span class="dt">mean =</span> <span class="dv">0</span>, <span class="dt">sd =</span> <span class="fl">0.5</span>)
+<span class="co"># simulate after with mean effect of 4.5 and standard devation of 5</span>
+after  &lt;-<span class="st"> </span>before <span class="op">+</span><span class="st"> </span><span class="kw">rnorm</span>(<span class="dv">10</span>, <span class="dt">mean =</span> <span class="fl">4.5</span>, <span class="dt">sd =</span> <span class="dv">5</span>)
+
+<span class="co"># Run a standard, non-paired t-test</span>
+<span class="kw">t.test</span>(<span class="dt">x =</span> before, <span class="dt">y =</span>after, <span class="dt">paired =</span> <span class="ot">FALSE</span>)</code></pre></div>
+<pre><code>## 
+##  Welch Two Sample t-test
+## 
+## data:  before and after
+## t = -4.6991, df = 9.3736, p-value = 0.001004
+## alternative hypothesis: true difference in means is not equal to 0
+## 95 percent confidence interval:
+##  -7.966165 -2.809916
+## sample estimates:
+##  mean of x  mean of y 
+## -0.2201914  5.1678489</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Run a standard, paired t-test</span>
+<span class="kw">t.test</span>(<span class="dt">x =</span> before, <span class="dt">y =</span>after, <span class="dt">paired =</span> <span class="ot">TRUE</span>)</code></pre></div>
+<pre><code>## 
+##  Paired t-test
+## 
+## data:  before and after
+## t = -5.138, df = 9, p-value = 0.0006129
+## alternative hypothesis: true difference in means is not equal to 0
+## 95 percent confidence interval:
+##  -7.760267 -3.015813
+## sample estimates:
+## mean of the differences 
+##                -5.38804</code></pre>
+<p>In this case, both the paired and the unpaired versions were significant, but the paired one showed a larger difference (more powerful).</p>
+</div>
+<div id="repeated-measures-anova" class="section level3">
+<h3><span class="header-section-number">6.3.2</span> Repeated Measures ANOVA</h3>
+<p>here we are going to use this process but for repeated (more than 2) measures using ANOVA. First, though, we have to create a data frame using the variables from the last section.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Create the data.frame, using the variables from the previous exercise. </span>
+<span class="co"># y is the joined vectors before and after.</span>
+<span class="co"># trial is the repeated names before and after, each one repeated n_ind</span>
+<span class="co"># ind is the letter of the individual, repeated 2 times (because there were two observations)</span>
+dat &lt;-<span class="st"> </span><span class="kw">data.frame</span>(<span class="dt">y =</span> <span class="kw">c</span>(before, after), 
+                  <span class="dt">trial =</span> <span class="kw">rep</span>(<span class="kw">c</span>(<span class="st">&quot;before&quot;</span>, <span class="st">&quot;after&quot;</span>), <span class="dt">each =</span> <span class="dv">10</span>),
+                  <span class="dt">ind =</span> <span class="kw">rep</span>(letters[<span class="dv">1</span><span class="op">:</span><span class="dv">10</span>], <span class="dt">times =</span> <span class="dv">2</span>))</code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(lmerTest)</code></pre></div>
+<pre><code>## Warning: package &#39;lmerTest&#39; was built under R version 3.5.3</code></pre>
+<pre><code>## 
+## Attaching package: &#39;lmerTest&#39;</code></pre>
+<pre><code>## The following object is masked from &#39;package:lme4&#39;:
+## 
+##     lmer</code></pre>
+<pre><code>## The following object is masked from &#39;package:stats&#39;:
+## 
+##     step</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Run a standard, paired t-test</span>
+<span class="kw">t.test</span>(before, after, <span class="dt">paired =</span> <span class="ot">TRUE</span>)</code></pre></div>
+<pre><code>## 
+##  Paired t-test
+## 
+## data:  before and after
+## t = -5.138, df = 9, p-value = 0.0006129
+## alternative hypothesis: true difference in means is not equal to 0
+## 95 percent confidence interval:
+##  -7.760267 -3.015813
+## sample estimates:
+## mean of the differences 
+##                -5.38804</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Run a lmer and save it as lmer_out</span>
+lmer_out &lt;-<span class="st"> </span><span class="kw">lmer</span>(y <span class="op">~</span><span class="st"> </span>trial <span class="op">+</span><span class="st"> </span>(<span class="dv">1</span><span class="op">|</span><span class="st"> </span>ind), <span class="dt">data =</span> dat)
+
+<span class="co"># Look at the summary() of lmer_out</span>
+<span class="kw">summary</span>(lmer_out)</code></pre></div>
+<pre><code>## Linear mixed model fit by REML. t-tests use Satterthwaite&#39;s method [
+## lmerModLmerTest]
+## Formula: y ~ trial + (1 | ind)
+##    Data: dat
+## 
+## REML criterion at convergence: 89.3
+## 
+## Scaled residuals: 
+##      Min       1Q   Median       3Q      Max 
+## -1.89008 -0.30775 -0.02928  0.22414  2.41195 
+## 
+## Random effects:
+##  Groups   Name        Variance Std.Dev.
+##  ind      (Intercept) 1.075    1.037   
+##  Residual             5.498    2.345   
+## Number of obs: 20, groups:  ind, 10
+## 
+## Fixed effects:
+##             Estimate Std. Error      df t value Pr(&gt;|t|)    
+## (Intercept)   5.1678     0.8108 17.5311   6.374 5.99e-06 ***
+## trialbefore  -5.3880     1.0487  9.0000  -5.138 0.000613 ***
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+## Correlation of Fixed Effects:
+##             (Intr)
+## trialbefore -0.647</code></pre>
+<p>In this case, the intercept is the same for the lmer and the t.test! So the lmer is basically an extension fo the paired t.test.</p>
+</div>
+<div id="example-ny-hate-crime-data" class="section level3">
+<h3><span class="header-section-number">6.3.3</span> Example: NY Hate Crime Data</h3>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">hate &lt;-<span class="st"> </span><span class="kw">read_csv</span>(<span class="st">&quot;https://assets.datacamp.com/production/repositories/1803/datasets/45e88fe1bc8d1d76d140e69cb873da9eddb7008e/hateNY.csv&quot;</span>)</code></pre></div>
+<pre><code>## Parsed with column specification:
+## cols(
+##   Year = col_double(),
+##   County = col_character(),
+##   TotalIncidents = col_double(),
+##   Year2 = col_double()
+## )</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">hate</code></pre></div>
+<pre><code>## # A tibble: 233 x 4
+##     Year County   TotalIncidents Year2
+##    &lt;dbl&gt; &lt;chr&gt;             &lt;dbl&gt; &lt;dbl&gt;
+##  1  2010 Albany               13     0
+##  2  2011 Albany                7     1
+##  3  2012 Albany                5     2
+##  4  2013 Albany                3     3
+##  5  2014 Albany                3     4
+##  6  2015 Albany                3     5
+##  7  2016 Albany                3     6
+##  8  2013 Allegany              1     3
+##  9  2010 Bronx                22     0
+## 10  2011 Bronx                11     1
+## # ... with 223 more rows</code></pre>
+<p>Give the different population sizes of New York counties, you can reasonably assume the need for random-effect intercepts a priori. However, do you need random-effect slopes? Plot the data to see if trends appear to vary by county. Additionally, plotting the data will help you see what is going on.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(hate, <span class="kw">aes</span>(<span class="dt">x =</span> Year, <span class="dt">y =</span> TotalIncidents, <span class="dt">group =</span> County)) <span class="op">+</span>
+<span class="st">  </span><span class="kw">geom_line</span>() <span class="op">+</span>
+<span class="st">  </span><span class="kw">geom_smooth</span>(<span class="dt">method =</span> <span class="st">&quot;glm&quot;</span>, <span class="dt">method.args =</span> <span class="kw">c</span>(<span class="st">&quot;poisson&quot;</span>), <span class="dt">se =</span> <span class="ot">FALSE</span>)</code></pre></div>
+<p><img src="Bookdown_files/figure-html/unnamed-chunk-75-1.png" width="672" /></p>
+<p>From the graph above, it looks like we need both random intercepts and random slopes.</p>
+<p>Now let’s build a simple <code>glm</code> model and then we cna move onto <code>glmer</code>.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">ny_hate_mod1 &lt;-<span class="st"> </span><span class="kw">glm</span>(TotalIncidents <span class="op">~</span><span class="st"> </span>Year <span class="op">+</span><span class="st"> </span>County, <span class="dt">data =</span> hate, <span class="dt">family =</span> <span class="st">&quot;poisson&quot;</span>)
+
+<span class="kw">summary</span>(ny_hate_mod1)</code></pre></div>
+<pre><code>## 
+## Call:
+## glm(formula = TotalIncidents ~ Year + County, family = &quot;poisson&quot;, 
+##     data = hate)
+## 
+## Deviance Residuals: 
+##     Min       1Q   Median       3Q      Max  
+## -3.8488  -0.6322  -0.1068   0.4336   4.9002  
+## 
+## Coefficients:
+##                     Estimate Std. Error z value Pr(&gt;|z|)    
+## (Intercept)        121.98334   21.85207   5.582 2.37e-08 ***
+## Year                -0.05977    0.01086  -5.506 3.67e-08 ***
+## CountyAllegany      -1.65787    1.01343  -1.636 0.101859    
+## CountyBronx          1.15126    0.18861   6.104 1.04e-09 ***
+## CountyBroome        -0.90255    0.32242  -2.799 0.005121 ** 
+## CountyCattaraugus   -1.45353    0.47648  -3.051 0.002284 ** 
+## CountyCayuga        -1.01203    0.44017  -2.299 0.021494 *  
+## CountyChautauqua    -1.48607    0.47654  -3.118 0.001818 ** 
+## CountyChemung       -1.70959    0.60037  -2.848 0.004405 ** 
+## CountyChenango      -1.17785    0.47650  -2.472 0.013441 *  
+## CountyClinton       -0.68000    0.37218  -1.827 0.067692 .  
+## CountyColumbia      -1.72240    0.60038  -2.869 0.004120 ** 
+## CountyCortland      -1.52662    0.47669  -3.203 0.001362 ** 
+## CountyDelaware      -1.53832    1.01371  -1.518 0.129138    
+## CountyDutchess       0.01178    0.23948   0.049 0.960756    
+## CountyErie           1.50107    0.18180   8.257  &lt; 2e-16 ***
+## CountyEssex         -1.45495    0.52651  -2.763 0.005721 ** 
+## CountyFranklin      -1.24769    0.44011  -2.835 0.004583 ** 
+## CountyFulton        -1.71765    1.01346  -1.695 0.090106 .  
+## CountyGenesee       -1.65787    1.01343  -1.636 0.101859    
+## CountyGreene        -1.53832    1.01371  -1.518 0.129138    
+## CountyHerkimer      -1.72478    0.72605  -2.376 0.017522 *  
+## CountyJefferson     -1.61690    0.52642  -3.072 0.002130 ** 
+## CountyKings          2.56910    0.17058  15.061  &lt; 2e-16 ***
+## CountyLewis         -1.71765    1.01346  -1.695 0.090106 .  
+## CountyLivingston    -1.22832    0.44015  -2.791 0.005259 ** 
+## CountyMadison       -0.87154    0.41226  -2.114 0.034512 *  
+## CountyMonroe        -0.20972    0.24568  -0.854 0.393315    
+## CountyMultiple      -1.09013    0.37168  -2.933 0.003357 ** 
+## CountyNassau         0.79580    0.19805   4.018 5.86e-05 ***
+## CountyNew York       2.48491    0.17111  14.522  &lt; 2e-16 ***
+## CountyNiagara       -0.60248    0.30616  -1.968 0.049088 *  
+## CountyOneida        -1.11226    0.47654  -2.334 0.019594 *  
+## CountyOnondaga      -1.17683    0.41236  -2.854 0.004318 ** 
+## CountyOntario       -1.76025    0.60053  -2.931 0.003377 ** 
+## CountyOrange        -0.17693    0.24349  -0.727 0.467435    
+## CountyOrleans       -1.40229    0.60081  -2.334 0.019596 *  
+## CountyOswego        -0.73686    0.35641  -2.067 0.038693 *  
+## CountyOtsego        -0.89300    0.32241  -2.770 0.005610 ** 
+## CountyPutnam        -0.99506    0.52634  -1.891 0.058689 .  
+## CountyQueens         1.51898    0.18151   8.369  &lt; 2e-16 ***
+## CountyRensselaer    -1.39772    0.52635  -2.656 0.007919 ** 
+## CountyRichmond       0.66575    0.20228   3.291 0.000997 ***
+## CountyRockland       0.04996    0.23759   0.210 0.833466    
+## CountySaratoga      -0.83543    0.33230  -2.514 0.011934 *  
+## CountySchenectady   -0.74492    0.39007  -1.910 0.056167 .  
+## CountySchoharie     -1.58092    0.60052  -2.633 0.008473 ** 
+## CountySchuyler      -1.77742    1.01360  -1.754 0.079505 .  
+## CountySeneca        -1.71765    1.01346  -1.695 0.090106 .  
+## CountySt. Lawrence  -1.04982    0.34342  -3.057 0.002236 ** 
+## CountySteuben       -1.34608    0.60049  -2.242 0.024985 *  
+## CountySuffolk        1.45168    0.18264   7.948 1.89e-15 ***
+## CountySullivan      -1.83720    1.01387  -1.812 0.069976 .  
+## CountyTioga         -1.59988    0.72608  -2.203 0.027563 *  
+## CountyTompkins      -0.63539    0.31378  -2.025 0.042869 *  
+## CountyUlster        -0.88945    0.34343  -2.590 0.009599 ** 
+## CountyWarren        -1.53832    1.01371  -1.518 0.129138    
+## CountyWashington    -1.43472    0.52643  -2.725 0.006423 ** 
+## CountyWayne         -1.11461    0.52691  -2.115 0.034400 *  
+## CountyWestchester    0.74295    0.19630   3.785 0.000154 ***
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+## (Dispersion parameter for poisson family taken to be 1)
+## 
+##     Null deviance: 4106.87  on 232  degrees of freedom
+## Residual deviance:  302.27  on 173  degrees of freedom
+## AIC: 1160.4
+## 
+## Number of Fisher Scoring iterations: 5</code></pre>
+<p>Now that our model ran without any problems, let’s build a <code>glmer()</code>:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">ny_hate_mod2 &lt;-<span class="st"> </span><span class="kw">glmer</span>(TotalIncidents <span class="op">~</span><span class="st"> </span>Year <span class="op">+</span><span class="st"> </span>(Year <span class="op">|</span><span class="st"> </span>County), <span class="dt">data =</span> hate, <span class="dt">family =</span> <span class="st">&quot;poisson&quot;</span>)</code></pre></div>
+<pre><code>## Warning in checkConv(attr(opt, &quot;derivs&quot;), opt$par, ctrl =
+## control$checkConv, : Model failed to converge with max|grad| = 0.370207
+## (tol = 0.001, component 1)</code></pre>
+<pre><code>## Warning in checkConv(attr(opt, &quot;derivs&quot;), opt$par, ctrl = control$checkConv, : Model is nearly unidentifiable: very large eigenvalue
+##  - Rescale variables?;Model is nearly unidentifiable: large eigenvalue ratio
+##  - Rescale variables?</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">summary</span>(ny_hate_mod2)</code></pre></div>
+<pre><code>## Generalized linear mixed model fit by maximum likelihood (Laplace
+##   Approximation) [glmerMod]
+##  Family: poisson  ( log )
+## Formula: TotalIncidents ~ Year + (Year | County)
+##    Data: hate
+## 
+##      AIC      BIC   logLik deviance df.resid 
+##   1165.3   1182.5   -577.6   1155.3      228 
+## 
+## Scaled residuals: 
+##     Min      1Q  Median      3Q     Max 
+## -2.5434 -0.4861 -0.1560  0.3330  3.1938 
+## 
+## Random effects:
+##  Groups Name        Variance  Std.Dev. Corr 
+##  County (Intercept) 4.748e+04 217.8915      
+##         Year        1.175e-02   0.1084 -1.00
+## Number of obs: 233, groups:  County, 59
+## 
+## Fixed effects:
+##               Estimate Std. Error z value Pr(&gt;|z|)    
+## (Intercept) 295.481381  17.537537   16.85   &lt;2e-16 ***
+## Year         -0.146370   0.008717  -16.79   &lt;2e-16 ***
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+## Correlation of Fixed Effects:
+##      (Intr)
+## Year -1.000
+## convergence code: 0
+## Model failed to converge with max|grad| = 0.370207 (tol = 0.001, component 1)
+## Model is nearly unidentifiable: very large eigenvalue
+##  - Rescale variables?
+## Model is nearly unidentifiable: large eigenvalue ratio
+##  - Rescale variables?</code></pre>
+<p>We got a wnrning about having a problem and needing to rescale, we can do this by using the Year2 variable instead of the Year variable (rescaling can help a lot with this)</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">ny_hate_mod3 &lt;-<span class="st"> </span><span class="kw">glmer</span>(TotalIncidents <span class="op">~</span><span class="st"> </span>Year2 <span class="op">+</span><span class="st"> </span>(Year2 <span class="op">|</span><span class="st"> </span>County), <span class="dt">data =</span> hate, <span class="dt">family =</span> <span class="st">&quot;poisson&quot;</span>)
+
+<span class="kw">summary</span>(ny_hate_mod3)</code></pre></div>
+<pre><code>## Generalized linear mixed model fit by maximum likelihood (Laplace
+##   Approximation) [glmerMod]
+##  Family: poisson  ( log )
+## Formula: TotalIncidents ~ Year2 + (Year2 | County)
+##    Data: hate
+## 
+##      AIC      BIC   logLik deviance df.resid 
+##   1165.3   1182.5   -577.6   1155.3      228 
+## 
+## Scaled residuals: 
+##     Min      1Q  Median      3Q     Max 
+## -2.5434 -0.4864 -0.1562  0.3319  3.1939 
+## 
+## Random effects:
+##  Groups Name        Variance Std.Dev. Corr
+##  County (Intercept) 1.16291  1.0784       
+##         Year2       0.01175  0.1084   0.02
+## Number of obs: 233, groups:  County, 59
+## 
+## Fixed effects:
+##             Estimate Std. Error z value Pr(&gt;|z|)    
+## (Intercept)  1.27952    0.16600   7.708 1.28e-14 ***
+## Year2       -0.14622    0.03324  -4.398 1.09e-05 ***
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+## Correlation of Fixed Effects:
+##       (Intr)
+## Year2 -0.338</code></pre>
+<p>Now let’s visualize the results:</p>
+<p>During this exercise, we’ll extract out the county-level estimates and plot them with ggplot2. The county-level random-effect slopes need to be added to the fixed-effect slopes to get the slope estimates for each county.</p>
+<p>In addition to this addition, the code includes ordering the counties by rate of crime (the slope estimates) to help visualize the data clearly.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Extract out the fixed-effect slope for Year2</span>
+Year2_slope &lt;-<span class="st"> </span><span class="kw">fixef</span>(ny_hate_mod3)[<span class="st">&#39;Year2&#39;</span>]
+
+<span class="co"># Extract out the random-effect slopes for county</span>
+county_slope &lt;-<span class="st"> </span><span class="kw">ranef</span>(ny_hate_mod3)<span class="op">$</span>County
+
+<span class="co"># Create a new column for the slope</span>
+county_slope<span class="op">$</span>slope &lt;-<span class="st"> </span>county_slope<span class="op">$</span>Year2 <span class="op">+</span><span class="st"> </span>Year2_slope
+
+<span class="co"># Use the row names to create a county name column</span>
+county_slope<span class="op">$</span>county &lt;-<span class="st"> </span><span class="kw">rownames</span>(county_slope)
+
+<span class="co"># Create an ordered county-level factor based upon slope values</span>
+county_slope<span class="op">$</span>county_plot &lt;-<span class="st"> </span><span class="kw">factor</span>(county_slope<span class="op">$</span>county, 
+                                   <span class="dt">levels =</span> county_slope<span class="op">$</span>county[<span class="kw">order</span>(county_slope<span class="op">$</span>slope)])
+
+<span class="co"># Now plot the results using ggplot2</span>
+<span class="kw">ggplot</span>(<span class="dt">data =</span> county_slope, <span class="kw">aes</span>(<span class="dt">x =</span> county_plot, <span class="dt">y =</span> slope)) <span class="op">+</span><span class="st"> </span>
+<span class="st">    </span><span class="kw">geom_point</span>() <span class="op">+</span>
+<span class="st">    </span><span class="kw">coord_flip</span>() <span class="op">+</span><span class="st"> </span>
+<span class="st">    </span><span class="kw">theme_bw</span>() <span class="op">+</span><span class="st"> </span>
+<span class="st">    </span><span class="kw">ylab</span>(<span class="st">&quot;Change in hate crimes per year&quot;</span>)  <span class="op">+</span>
+<span class="st">    </span><span class="kw">xlab</span>(<span class="st">&quot;County&quot;</span>)</code></pre></div>
+<p><img src="Bookdown_files/figure-html/unnamed-chunk-79-1.png" width="672" /></p>
+<p>Note how the change in hate crimes varies greatly across countries!</p>
+
+</div>
+</div>
+</div>
+            </section>
+
+          </div>
+        </div>
+      </div>
+<a href="ordered-logit-models.html" class="navigation navigation-prev " aria-label="Previous page"><i class="fa fa-angle-left"></i></a>
+<a href="count-data.html" class="navigation navigation-next " aria-label="Next page"><i class="fa fa-angle-right"></i></a>
+    </div>
+  </div>
+<script src="libs/gitbook-2.6.7/js/app.min.js"></script>
+<script src="libs/gitbook-2.6.7/js/lunr.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-search.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-sharing.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-fontsettings.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-bookdown.js"></script>
+<script src="libs/gitbook-2.6.7/js/jquery.highlight.js"></script>
+<script>
+gitbook.require(["gitbook"], function(gitbook) {
+gitbook.start({
+"sharing": {
+"github": false,
+"facebook": true,
+"twitter": true,
+"google": false,
+"linkedin": false,
+"weibo": false,
+"instapaper": false,
+"vk": false,
+"all": ["facebook", "google", "twitter", "linkedin", "weibo", "instapaper"]
+},
+"fontsettings": {
+"theme": "white",
+"family": "sans",
+"size": 2
+},
+"edit": {
+"link": null,
+"text": null
+},
+"history": {
+"link": null,
+"text": null
+},
+"download": ["Bookdown.pdf", "Bookdown.epub"],
+"toc": {
+"collapse": "subsection"
+}
+});
+});
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    var src = "";
+    if (src === "" || src === "true") src = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-MML-AM_CHTML";
+    if (location.protocol !== "file:" && /^https?:/.test(src))
+      src = src.replace(/^https?:/, '');
+    script.src = src;
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+</body>
+
+</html>

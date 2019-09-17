@@ -1,2 +1,1 @@
-# statistical-analysis-in-R
-Personal book of main analyses
+AccessLex Book for Modeling
